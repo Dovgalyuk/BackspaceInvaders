@@ -27,8 +27,8 @@ Buttons - Arduino
 * FIRE - 13
 
 Lower part of display is connected through upper one as follows:
-
- LLLLUUUU
- LLLLUUUU
-
+```
+LLLLUUUU
+LLLLUUUU
+```
 This is logically 128x32 display.
