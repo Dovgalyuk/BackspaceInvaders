@@ -35,3 +35,5 @@ LLLLUUUU
 ```
 Therefore this is logically 128x32 display.
 Arduino shifts 128 pixels into display registers at every iteration.
+
+Demonstration of the working prototype: https://www.youtube.com/watch?v=gy7oADJboqM
