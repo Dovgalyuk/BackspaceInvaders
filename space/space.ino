@@ -32,7 +32,7 @@
 #define SCLKPORT PORTB
 
 #define GREEN 2
-#define YELLOW 6
+#define CYAN  6
 #define WHITE 7
 
 volatile uint8_t
@@ -42,8 +42,8 @@ uint8_t
     sclkpin, latpin, oepin, addrapin, addrbpin, addrcpin, addrdpin,
     leftpin, rightpin, firepin;
 
-uint16_t hiscore;
-uint16_t score;
+int16_t hiscore;
+int16_t score;
 
 void setup()
 {
@@ -108,7 +108,6 @@ void setup()
   //EEPROM.write(0, 0);
   //EEPROM.write(1, 0);
   hiscore = (EEPROM.read(1) << 8) + EEPROM.read(0);
-  score = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -270,15 +269,15 @@ const Sprite gameOver PROGMEM = {
 ////////////////////////////////////////////////////////////
 
 #define LIFE_X 1
-#define LIFE_Y 1 
+#define LIFE_Y 2 
 const uint8_t lifeLines[] PROGMEM = {
-  B00100000,
-  B11111000,
-  B11111000
+  B01000000,
+  B11100000,
+  B11100000
 };
 
 const Sprite life PROGMEM = {
-  5, 3, 1, lifeLines
+  3, 3, 1, lifeLines
 };
 
 ////////////////////////////////////////////////////////////
@@ -302,6 +301,43 @@ const Sprite hiLabel PROGMEM = {
 ////////////////////////////////////////////////////////////
 // Wave data
 ////////////////////////////////////////////////////////////
+
+const uint8_t waveLines[] PROGMEM = {
+  B10100100, B10101110,
+  B10101010, B10101000,
+  B11101110, B10101110,
+  B11101010, B10101000,
+  B10101010, B01001110
+};
+
+#define WAVE_X 14
+#define WAVE_Y 1
+const Sprite waveSprite PROGMEM = {
+  15, 5, 2, waveLines
+};
+
+////////////////////////////////////////////////////////////
+// Logo data
+////////////////////////////////////////////////////////////
+
+const uint8_t logoLines[] PROGMEM = {
+  B11111011, B11101111, B10100010, B11111011, B11101111, B10111110, B11111000,
+  B10001000, B00001000, B00100010, B10000010, B00100000, B00100000, B00000000,
+  B11111011, B11101000, B00111100, B11111010, B00101111, B10100000, B11111000,
+  B10001010, B00101000, B00100010, B00001010, B00101000, B10100000, B00000000,
+  B11111011, B11101111, B10100010, B11111011, B11101111, B10111110, B11111000,
+  B00000000, B00000000, B00000000, B00000010, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B00000010, B00000000, B00000000, B00000000,
+  B00000010, B11111010, B00101111, B10111110, B11111011, B11101111, B10000000,
+  B00000010, B10001010, B00100000, B00100010, B00000010, B00001000, B00000000,
+  B00000010, B10001010, B00101111, B10100010, B11111010, B00001111, B10000000,
+  B00000010, B10001001, B01001000, B10100010, B00000010, B00000000, B10000000,
+  B00000010, B10001000, B10001111, B10111110, B11111010, B00001111, B10000000,
+};
+
+const Sprite logo PROGMEM = {
+  53, 12, 7, logoLines
+};
 
 ////////////////////////////////////////////////////////////
 // Digits data
@@ -383,16 +419,26 @@ const Sprite digits[10] PROGMEM = {
 const uint8_t trajectory[T_LENGTH] PROGMEM = {24, 26, 28, 30, 33, 35, 37, 39, 40, 42, 43, 45, 46, 46, 47, 47, 48, 47, 47, 46, 46, 45, 43, 42, 40, 39, 37, 35, 33, 30, 28, 26, 23, 21, 19, 17, 14, 12, 10, 8, 7, 5, 4, 2, 1, 1, 0, 0, 0, 0, 0, 1, 1, 2, 4, 5, 7, 8, 10, 12, 14, 17, 19, 21};
 
 ////////////////////////////////////////////////////////////
+// Phases
+////////////////////////////////////////////////////////////
+
+#define PHASE_LOGO 1
+#define PHASE_GAME 2
+#define PHASE_GAMEOVER 3
+uint8_t phase = PHASE_LOGO;
+
+////////////////////////////////////////////////////////////
 // Variables
 ////////////////////////////////////////////////////////////
 
-#define INVADERS 4
+#define INVADERS 10
 int invaderX[INVADERS];
 int invaderY[INVADERS];
 int invaderType[INVADERS];
 int invaderColor[INVADERS];
 int invaderSpeedX[INVADERS];
 int invaderSpeedY[INVADERS];
+int invaderPhase[INVADERS];
 
 int cannonX = (WIDTH - sprite_width(&cannon)) / 2;
 int cannonY = WIDTH - sprite_height(&cannon);
@@ -402,7 +448,9 @@ int cannonY = WIDTH - sprite_height(&cannon);
 int shootX[SHOOTS];
 int shootY[SHOOTS];
 
-int invaderPhase[INVADERS] = {0, 0, 0, 0};
+#define MAX_WAVE INVADERS
+int wave;
+int waveInvaders;
 
 #define SCORE_X 48
 #define HISCORE_Y HISCORE_LABEL_Y
@@ -413,8 +461,10 @@ unsigned long frameTime;
 unsigned long invadeTime;
 unsigned long moveTime;
 unsigned long shootTime;
+unsigned long phaseTime;
 
-int lives = 3;
+#define MAX_LIVES 3
+int lives;
 
 void render_digits(uint16_t num, int len, int x, int y, uint8_t *buf, int line, uint8_t color)
 {
@@ -439,46 +489,54 @@ void renderLine(uint8_t *buf, int y)
     buf[i] = 0;
 
   // draw invaders
-  for (int i = 0 ; i < INVADERS ; ++i)
+  for (int i = 0 ; i < wave ; ++i)
   {
     if (invaderType[i])
     {
       sprite_render(invader_sprite(invaderType[i]), invaderX[i], invaderY[i], buf, y, invaderColor[i]);
     }
   }
+  
   // draw cannon
-  if (lives)
-  {
+  if (lives && phase == PHASE_GAME)
     sprite_render(&cannon, cannonX, cannonY, buf, y, GREEN);
-  }
 
   // draw shoots
-  for (int i = 0 ; i < SHOOTS ; ++i)
-  {
-    if (shootY[i] >= 0)
+  if (phase == PHASE_GAME)
+    for (int i = 0 ; i < SHOOTS ; ++i)
     {
-      if (y >= shootY[i] && y < shootY[i] + SHOOT_H)
-        buf[shootX[i]] = WHITE;
+      if (shootY[i] >= 0)
+      {
+        if (y >= shootY[i] && y < shootY[i] + SHOOT_H)
+          buf[shootX[i]] = WHITE;
+      }
     }
-  }
 
   // draw gameover
-  if (!lives)
-  {
+  if (phase == PHASE_GAMEOVER)
     sprite_render(&gameOver, GAMEOVER_X, GAMEOVER_Y, buf, y, WHITE);
-  }
 
   // draw lives
   int lifeWidth = sprite_width(&life);
   for (int i = 0 ; i < lives ; ++i)
-  {
     sprite_render(&life, LIFE_X + (lifeWidth + 1) * i, LIFE_Y, buf, y, GREEN);
+
+  // draw wave
+  if (phase == PHASE_GAME)
+  {
+    sprite_render(&waveSprite, WAVE_X, WAVE_Y, buf, y, CYAN);
+    render_digits(wave, 2, WAVE_X + 1 + sprite_width(&waveSprite), WAVE_Y, buf, y, WHITE);
   }
 
   // draw score
-  sprite_render(&hiLabel, HISCORE_LABEL_X, HISCORE_Y, buf, y, YELLOW);
+  sprite_render(&hiLabel, HISCORE_LABEL_X, HISCORE_Y, buf, y, CYAN);
   render_digits(hiscore, SCORE_DIGITS, SCORE_X, HISCORE_Y, buf, y, WHITE);
-  render_digits(score, SCORE_DIGITS, SCORE_X, SCORE_Y, buf, y, WHITE);
+  if (phase == PHASE_GAME)
+    render_digits(score, SCORE_DIGITS, SCORE_X, SCORE_Y, buf, y, WHITE);
+
+  // draw logo
+  if (phase == PHASE_LOGO)
+    sprite_render(&logo, (WIDTH - sprite_width(&logo)) / 2, (WIDTH - sprite_height(&logo)) / 2, buf, y, rand() % 6 + 1);
 
   // there is broken LED here:
   if (y == 63)
@@ -575,7 +633,7 @@ void loop() {
     frameTime = curTime;
 
     // moving invaders
-    for (int i = 0 ; i < INVADERS ; ++i)
+    for (int i = 0 ; i < wave ; ++i)
     {
       if (invaderType[i])
       {
@@ -583,7 +641,7 @@ void loop() {
         int y = invaderY[i];
         y += invaderSpeedY[i];
         if (y < WIDTH - 18)
-        {        
+        {
           x -= pgm_read_byte(&trajectory[invaderPhase[i]]);
           invaderPhase[i] = (invaderPhase[i] + invaderSpeedX[i]) % T_LENGTH;
           x += pgm_read_byte(&trajectory[invaderPhase[i]]);
@@ -600,8 +658,9 @@ void loop() {
           invaderType[i] = 0;
           if (lives)
           {
-            score -= 5;
-            if (score < 0)
+            if (score >= 5)
+              score -= 5;
+            else
               score = 0;
           }
         }
@@ -609,11 +668,13 @@ void loop() {
     }
 
     // new invader
-    if (curTime - invadeTime >= 500)
+    if (phase == PHASE_GAME && curTime - invadeTime >= 500)
     {
-      for (int i = 0 ; i < INVADERS ; ++i)
-        if (!invaderType[i])
+      for (int i = 0 ; i < wave ; ++i)
+        if (!invaderType[i] && waveInvaders)
         {
+          if (lives)
+            --waveInvaders;
           invadeTime = curTime;
           invaderType[i] = rand() % INVADER_TYPES + 1;
           int offs = rand() % (WIDTH - T_WIDTH - invader_width(invaderType[i]));
@@ -629,7 +690,7 @@ void loop() {
     }
   }
 
-  if (step == 0 && curTime - moveTime >= 20)
+  if (step == 0 && phase == PHASE_GAME && curTime - moveTime >= 20)
   {
     moveTime = curTime;  
 
@@ -640,7 +701,7 @@ void loop() {
       if (shootY[s] >= 0)
       {
         shootY[s] -= 3;
-        for (int i = 0 ; i < INVADERS ; ++i)
+        for (int i = 0 ; i < wave ; ++i)
         {
           if (invaderType[i] 
             && intersectRect(shootX[s], shootY[s], 1, SHOOT_H, invaderX[i], invaderY[i], invader_width(invaderType[i]), invader_height(invaderType[i])))
@@ -648,7 +709,7 @@ void loop() {
             invaderType[i] = 0;
             shootY[s] = -1;
 
-            ++score;
+            score += 1;//wave;
             break;
           }
         }
@@ -656,8 +717,23 @@ void loop() {
     }
     if (lives)
     {
+      // next wave
+      bool haveInvaders = false;
+      for (int i = 0 ; i < wave ; ++i)
+        if (invaderType[i])
+          haveInvaders = true;
+      if (!haveInvaders && !waveInvaders)
+      {
+        ++wave;
+        invaderType[wave - 1] = 0;
+        waveInvaders = wave * 10;
+        // Impossible mission
+        if (wave == MAX_WAVE)
+          waveInvaders = 9999;
+      }
+      
       // kill cannon
-      for (int i = 0 ; i < INVADERS ; ++i)
+      for (int i = 0 ; i < wave ; ++i)
       {
         if (invaderType[i] 
           && intersectRect(cannonX, cannonY, sprite_width(&cannon), sprite_height(&cannon), invaderX[i], invaderY[i], invader_width(invaderType[i]), invader_height(invaderType[i])))
@@ -665,22 +741,25 @@ void loop() {
           --lives;
           if (lives)
           {
-            for (int j = 0 ; j < INVADERS ; ++j)
+            for (int j = 0 ; j < wave ; ++j)
               invaderType[j] = 0;
           }
           else
           {
+            phase = PHASE_GAMEOVER;
+            phaseTime = curTime;
             if (score > hiscore)
             {
               hiscore = score;
               EEPROM.write(0, hiscore & 0xff);
               EEPROM.write(1, (hiscore >> 8) & 0xff);
-            }            
+            }
           }
           break;
         }
       }
 
+      // move cannon
       int cannonW = sprite_width(&cannon);
       int step = 2;
       if ((*rightport & rightpin) == 0 && cannonX + step + cannonW <= WIDTH)
@@ -706,6 +785,24 @@ void loop() {
         }
       }
     }
+  }
+
+  if (step == 0 && phase == PHASE_LOGO && (*fireport & firepin) == 0)
+  {
+    phase = PHASE_GAME;
+    lives = MAX_LIVES;
+    wave = 0;
+    waveInvaders = 0;
+    score = 0;
+    cannonX = (WIDTH - sprite_width(&cannon)) / 2;
+    cannonY = WIDTH - sprite_height(&cannon);
+    for (int i = 0 ; i < SHOOTS ; ++i)
+      shootY[i] = -1;
+  }
+
+  if (step == 0 && phase == PHASE_GAMEOVER && curTime - phaseTime > 3000)
+  {
+    phase = PHASE_LOGO;
   }
 }
 

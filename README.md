@@ -26,9 +26,12 @@ Buttons - Arduino
 * RIGHT - 12
 * FIRE - 13
 
-Lower part of display is connected through upper one as follows:
+The display is logically split into two parts with separate controllers.
+Lower part of display is connected through the upper one with
+the cable as follows:
 ```
 LLLLUUUU
 LLLLUUUU
 ```
-This is logically 128x32 display.
+Therefore this is logically 128x32 display.
+Arduino shifts 128 pixels into display registers at every iteration.
