@@ -196,9 +196,34 @@ const uint8_t invader2lines[] PROGMEM = {
   B00011011, B00000000
 };
 
-#define INVADER_TYPES 2
+const uint8_t invader3lines[] PROGMEM = {
+  B00010000, B01000000,
+  B00001000, B10000000,
+  B00000101, B00000000,
+  B00111111, B11100000,
+  B01111111, B11110000,
+  B11100111, B00111000,
+  B01111111, B11110000,
+  B00111111, B11100000,
+  B00001010, B10000000,
+  B00010000, B01000000
+};
+
+const uint8_t invader4lines[] PROGMEM = {
+  B11100111,
+  B00111100,
+  B01111110,
+  B01011010,
+  B11111111,
+  B10111101,
+  B00111100,
+  B01111110,
+};
+
+#define INVADER_TYPES 4
 const Sprite invaders[INVADER_TYPES] PROGMEM = {
-  {8, 8, 1, invader1lines}, {11, 8, 2, invader2lines}
+  {8, 8, 1, invader1lines}, {11, 8, 2, invader2lines},
+  {13, 10, 2, invader3lines}, {8, 8, 1, invader4lines}
 };
 
 uint8_t invader_width(int type)
