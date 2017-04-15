@@ -25,6 +25,7 @@ Buttons - Arduino
 * LEFT - 11
 * RIGHT - 12
 * FIRE - 13
+* UNASSIGNED - A4
 
 The display is logically split into two parts with separate controllers.
 Lower part of display is connected through the upper one with
