@@ -24,6 +24,7 @@
 #define LEFT 11
 #define RIGHT 12
 #define FIRE 13
+#define FIRE2 A4
 
 #define WIDTH 64
 
@@ -37,10 +38,10 @@
 
 volatile uint8_t
     *latport, *oeport, *addraport, *addrbport, *addrcport, *addrdport,
-    *leftport, *rightport, *fireport;
+    *leftport, *rightport, *fireport, *fire2port;
 uint8_t
     sclkpin, latpin, oepin, addrapin, addrbpin, addrcpin, addrdpin,
-    leftpin, rightpin, firepin;
+    leftpin, rightpin, firepin, fire2pin;
 
 int16_t hiscore;
 int16_t score;
@@ -67,6 +68,8 @@ void setup()
   rightpin  = digitalPinToBitMask(RIGHT); 
   fireport = portInputRegister(digitalPinToPort(FIRE));
   firepin  = digitalPinToBitMask(FIRE); 
+  fire2port = portInputRegister(digitalPinToPort(FIRE2));
+  fire2pin  = digitalPinToBitMask(FIRE2); 
 
   // put your setup code here, to run once:
   pinMode(CLK , OUTPUT);
@@ -490,6 +493,7 @@ unsigned long phaseTime;
 
 #define MAX_LIVES 3
 int lives;
+bool started;
 
 void render_digits(uint16_t num, int len, int x, int y, uint8_t *buf, int line, uint8_t color)
 {
@@ -556,7 +560,7 @@ void renderLine(uint8_t *buf, int y)
   // draw score
   sprite_render(&hiLabel, HISCORE_LABEL_X, HISCORE_Y, buf, y, CYAN);
   render_digits(hiscore, SCORE_DIGITS, SCORE_X, HISCORE_Y, buf, y, WHITE);
-  if (phase == PHASE_GAME)
+  if (started)
     render_digits(score, SCORE_DIGITS, SCORE_X, SCORE_Y, buf, y, WHITE);
 
   // draw logo
@@ -795,7 +799,7 @@ void loop() {
       {
         cannonX = cannonX - step;
       }
-      if ((*fireport & firepin) == 0
+      if (((*fireport & firepin) == 0 || (*fire2port & fire2pin) == 0)
         && curTime - shootTime >= 500) // shoot
       {
         shootTime = curTime;
@@ -812,8 +816,10 @@ void loop() {
     }
   }
 
-  if (step == 0 && phase == PHASE_LOGO && (*fireport & firepin) == 0)
+  if (step == 0 && phase == PHASE_LOGO
+      && ((*fireport & firepin) == 0 || (*fire2port & fire2pin) == 0))
   {
+    started = true;
     phase = PHASE_GAME;
     lives = MAX_LIVES;
     wave = 0;
