@@ -21,10 +21,15 @@
 #define C   A2
 #define D   A3
 
-#define LEFT 11
-#define RIGHT 12
-#define FIRE 13
-#define FIRE2 A4
+#define BUTTON_SW 11
+#define BUTTON_NW A4
+#define BUTTON_SE 12
+#define BUTTON_NE 13
+
+#define LEFT BUTTON_SW
+#define RIGHT BUTTON_NW
+#define FIRE BUTTON_SE
+#define FIRE2 BUTTON_NE
 
 #define WIDTH 64
 
@@ -450,9 +455,13 @@ const uint8_t trajectory[T_LENGTH] PROGMEM = {24, 26, 28, 30, 33, 35, 37, 39, 40
 // Phases
 ////////////////////////////////////////////////////////////
 
-#define PHASE_LOGO 1
-#define PHASE_GAME 2
-#define PHASE_GAMEOVER 3
+enum Phases
+{
+  PHASE_LOGO,
+  PHASE_GAME,
+  PHASE_NEXT_WAVE,
+  PHASE_GAMEOVER
+};
 uint8_t phase = PHASE_LOGO;
 
 ////////////////////////////////////////////////////////////
@@ -527,11 +536,11 @@ void renderLine(uint8_t *buf, int y)
   }
   
   // draw cannon
-  if (lives && phase == PHASE_GAME)
+  if (lives && phase == PHASE_GAME || phase == PHASE_NEXT_WAVE)
     sprite_render(&cannon, cannonX, cannonY, buf, y, GREEN);
 
   // draw shoots
-  if (phase == PHASE_GAME)
+  if (phase == PHASE_GAME || phase == PHASE_NEXT_WAVE)
     for (int i = 0 ; i < SHOOTS ; ++i)
     {
       if (shootY[i] >= 0)
@@ -551,7 +560,7 @@ void renderLine(uint8_t *buf, int y)
     sprite_render(&life, LIFE_X + (lifeWidth + 1) * i, LIFE_Y, buf, y, GREEN);
 
   // draw wave
-  if (phase == PHASE_GAME)
+  if (phase == PHASE_GAME || phase == PHASE_NEXT_WAVE)
   {
     sprite_render(&waveSprite, WAVE_X, WAVE_Y, buf, y, CYAN);
     render_digits(wave, 2, WAVE_X + 1 + sprite_width(&waveSprite), WAVE_Y, buf, y, WHITE);
@@ -719,7 +728,7 @@ void loop() {
     }
   }
 
-  if (step == 0 && phase == PHASE_GAME && curTime - moveTime >= 20)
+  if (step == 0 && (phase == PHASE_GAME || phase == PHASE_NEXT_WAVE) && curTime - moveTime >= 20)
   {
     moveTime = curTime;  
 
@@ -751,14 +760,16 @@ void loop() {
       for (int i = 0 ; i < wave ; ++i)
         if (invaderType[i])
           haveInvaders = true;
-      if (!haveInvaders && !waveInvaders)
+      if (!haveInvaders && !waveInvaders && phase == PHASE_GAME)
       {
+        phase = PHASE_NEXT_WAVE;
         ++wave;
         invaderType[wave - 1] = 0;
         waveInvaders = wave * 10;
         // Impossible mission
         if (wave == MAX_WAVE)
           waveInvaders = 9999;
+        phaseTime = curTime;
       }
       
       // kill cannon
@@ -829,6 +840,11 @@ void loop() {
     cannonY = WIDTH - sprite_height(&cannon);
     for (int i = 0 ; i < SHOOTS ; ++i)
       shootY[i] = -1;
+  }
+
+  if (step == 0 && phase == PHASE_NEXT_WAVE && curTime - phaseTime > 2000)
+  {
+    phase = PHASE_GAME;
   }
 
   if (step == 0 && phase == PHASE_GAMEOVER && curTime - phaseTime > 3000)
