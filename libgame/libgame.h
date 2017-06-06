@@ -79,6 +79,7 @@ uint8_t game_sprite_width(const struct game_sprite *s);
 uint8_t game_sprite_height(const struct game_sprite *s);
 void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color);
 void game_draw_pixel(int x, int y, uint8_t color);
+void game_draw_text(const char *s, int x, int y, uint8_t color); // text is drawn with default 5x7 font
 
 bool game_is_button_pressed(uint8_t button);
 

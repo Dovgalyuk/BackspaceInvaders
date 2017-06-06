@@ -1,4 +1,5 @@
 #include "libgame.h"
+#include "font.h"
 
 // Arduino configuration
 
@@ -180,11 +181,39 @@ void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color)
 
 void game_draw_pixel(int x, int y, uint8_t color)
 {
+    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+        return;
     if (game_render_y == y)
     {
         game_render_buf[x] = game_make_color(color);
     }
 }
+
+void game_draw_text(const char *s, int x, int y, uint8_t color)
+{
+    int xx = x;
+    int yy = y;
+    for (const char *c = s; *c; ++c)
+    {
+        if (*c == '\n')
+        {
+            xx = x;
+            yy += 8;
+            continue;
+        }
+        if (game_render_y < yy || game_render_y >= yy + 7)
+            continue;
+        int pos = (int)*c * 5;
+        for (int i = 0; i < 5; ++i)
+        {
+            uint8_t d = font_data[pos + i];
+            if ((d >> (game_render_y - yy)) & 1)
+                game_render_buf[xx + i] = game_make_color(color);
+        }
+        xx += 6;
+    }
+}
+
 
 bool game_is_button_pressed(uint8_t button)
 {

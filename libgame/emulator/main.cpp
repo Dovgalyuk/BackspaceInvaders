@@ -13,6 +13,7 @@
 #include <SFML/Graphics.hpp>
 #include <stdint.h>
 #include "../libgame.h"
+#include "../font.h"
 
 const int SCALE = 8;
 
@@ -46,6 +47,8 @@ uint8_t game_sprite_height(const struct game_sprite *s)
 
 void game_draw_pixel(int x, int y, uint8_t c)
 {
+    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+        return;
     int pos = 4 * (x * WIDTH + y);
     sf::Color color(((c >> 4) & 3) * 85, ((c >> 2) & 3) * 85, (c & 3) * 85);
     (*screen)[pos + 0].color = color;
@@ -111,6 +114,32 @@ void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color)
             if ((s->lines[byte] >> bit) & 1)
                 game_draw_pixel(xx, yy, color);
         }
+    }
+}
+
+void game_draw_text(const char *s, int x, int y, uint8_t color)
+{
+    int xx = x;
+    int yy = y;
+    for (const char *c = s; *c; ++c)
+    {
+        if (*c == '\n')
+        {
+            xx = x;
+            yy += 8;
+            continue;
+        }
+        int pos = (int)*c * 5;
+        for (int i = 0; i < 5; ++i)
+        {
+            for (int j = 0; j < 7; ++j)
+            {
+                uint8_t d = font_data[pos + i];
+                if ((d >> j) & 1)
+                    game_draw_pixel(xx + i, yy + j, color);
+            }
+        }
+        xx += 6;
     }
 }
 
