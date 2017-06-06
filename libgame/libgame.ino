@@ -1,14 +1,6 @@
-#include <avr/pgmspace.h>
-#include <EEPROM.h>
 #include "libgame.h"
 
 // Arduino configuration
-
-#if !defined(__INT_MAX__) || (__INT_MAX__ > 0xFFFF)
- #define pgm_read_pointer(addr) ((void *)pgm_read_dword(addr))
-#else
- #define pgm_read_pointer(addr) ((void *)pgm_read_word(addr))
-#endif
 
 #define IR1 2
 #define IG1 3
@@ -24,30 +16,39 @@
 #define C   A2
 #define D   A3
 
+#define WIDTH 64
+
 
 #define DATAPORT PORTD
 #define DATADIR  DDRD
 #define SCLKPORT PORTB
 
-unsigned long ticks;
-unsigned long last_update = 0;
-uint8_t step = 0;
+static unsigned long ticks;
+static unsigned long last_update = 0;
+static uint8_t step = 0;
 
 // RENDER VARS
-int game_render_y;
-uint8_t *game_render_buf;
+static int game_render_y;
+static uint8_t *game_render_buf;
+static uint8_t color_channel = 0;
 
 // IMPLEMENT THIS IN YOUR GAME
 void render(); // render sprites
 void update(unsigned long delta); // update logic (ms since last update), enforced by ups / ticks
 
 
-volatile uint8_t
+static volatile uint8_t
     *latport, *oeport, *addraport, *addrbport, *addrcport, *addrdport,
     *btnSWport, *btnNWport, *btnSEport, *btnNEport;
-uint8_t
+static uint8_t
     sclkpin, latpin, oepin, addrapin, addrbpin, addrcpin, addrdpin,
     btnSWpin, btnNWpin, btnSEpin, btnNEpin;
+
+
+int get_rand()
+{
+    return rand();
+}
 
 
 void game_setup(int ups)
@@ -113,6 +114,15 @@ void game_setup(int ups)
 }
 
 
+uint8_t game_make_color(uint8_t color)
+{
+    // RRGGBB -> BGR
+    return (color >> (4 + color_channel) & 1) |
+           ((color >> (2 + color_channel) & 1) << 1) |
+           ((color >> color_channel & 1) << 2);
+}
+
+
 uint8_t game_sprite_width(const struct game_sprite *s)
 {
     return pgm_read_byte(&s->width);
@@ -165,7 +175,30 @@ void game_sprite_render_impl(const struct game_sprite *s, int x, int y, uint8_t 
 
 void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color)
 {
-    game_sprite_render_impl(s, x, y, game_render_buf, game_render_y, color);
+    game_sprite_render_impl(s, x, y, game_render_buf, game_render_y, game_make_color(color));
+}
+
+void game_draw_pixel(int x, int y, uint8_t color)
+{
+    if (game_render_y == y)
+    {
+        game_render_buf[x] = game_make_color(color);
+    }
+}
+
+bool game_is_button_pressed(uint8_t button)
+{
+    volatile uint8_t *port;
+    uint8_t pin;
+    switch (button)
+    {
+    case BUTTON_SW: pin = btnSWpin; port = btnSWport; break;
+    case BUTTON_NW: pin = btnNWpin; port = btnNWport; break;
+    case BUTTON_SE: pin = btnSEpin; port = btnSEport; break;
+    case BUTTON_NE: pin = btnNEpin; port = btnNEport; break;
+    }
+
+    return ((*port & pin) == 0);
 }
 
 void game_render_line(uint8_t *buf, int y)
@@ -214,6 +247,8 @@ void game_run()
         else
             *addrdport &= ~addrdpin;
         step = (step + 1) & 0xf;
+        if (step == 0)
+            color_channel ^= 1;
 
         *oeport &= ~oepin;
 
@@ -244,7 +279,7 @@ void game_run()
 
         unsigned long cur_time = millis();
 
-        if (cur_time - last_update >= ticks)
+        if (cur_time - last_update >= ticks && step == 0 && color_channel == 0)
         {
             update(cur_time - last_update);
             last_update = cur_time;
