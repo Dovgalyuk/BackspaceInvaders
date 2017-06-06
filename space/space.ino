@@ -29,7 +29,7 @@
 #define LEFT BUTTON_SW
 #define RIGHT BUTTON_NW
 #define FIRE BUTTON_SE
-#define FIRE2 BUTTON_NE
+#define PAUSE BUTTON_NE
 
 #define WIDTH 64
 
@@ -43,10 +43,10 @@
 
 volatile uint8_t
     *latport, *oeport, *addraport, *addrbport, *addrcport, *addrdport,
-    *leftport, *rightport, *fireport, *fire2port;
+    *leftport, *rightport, *fireport, *pauseport;
 uint8_t
     sclkpin, latpin, oepin, addrapin, addrbpin, addrcpin, addrdpin,
-    leftpin, rightpin, firepin, fire2pin;
+    leftpin, rightpin, firepin, pausepin;
 
 int16_t hiscore;
 int16_t score;
@@ -73,8 +73,8 @@ void setup()
   rightpin  = digitalPinToBitMask(RIGHT); 
   fireport = portInputRegister(digitalPinToPort(FIRE));
   firepin  = digitalPinToBitMask(FIRE); 
-  fire2port = portInputRegister(digitalPinToPort(FIRE2));
-  fire2pin  = digitalPinToBitMask(FIRE2); 
+  pauseport = portInputRegister(digitalPinToPort(PAUSE));
+  pausepin  = digitalPinToBitMask(PAUSE); 
 
   // put your setup code here, to run once:
   pinMode(CLK , OUTPUT);
@@ -373,6 +373,25 @@ const Sprite logo PROGMEM = {
 };
 
 ////////////////////////////////////////////////////////////
+// Pause data
+////////////////////////////////////////////////////////////
+
+#define PAUSE_X 14
+#define PAUSE_Y 29
+
+const uint8_t pauseLines[] PROGMEM = {
+  B01111000,B11100100,B01001111,B01111101,B11100000,
+  B01000101,B00010100,B01010000,B01000001,B00010000,
+  B01111001,B11110100,B01011111,B01111101,B00010000,
+  B01000001,B00010100,B01000001,B01000001,B00010000,
+  B01000001,B00010011,B10011110,B01111101,B11100000,
+};
+
+const Sprite pause PROGMEM = {
+  36, 5, 5, pauseLines
+};
+
+////////////////////////////////////////////////////////////
 // Digits data
 ////////////////////////////////////////////////////////////
 
@@ -460,7 +479,8 @@ enum Phases
   PHASE_LOGO,
   PHASE_GAME,
   PHASE_NEXT_WAVE,
-  PHASE_GAMEOVER
+  PHASE_GAMEOVER,
+  PHASE_PAUSED
 };
 uint8_t phase = PHASE_LOGO;
 
@@ -536,11 +556,11 @@ void renderLine(uint8_t *buf, int y)
   }
   
   // draw cannon
-  if (lives && phase == PHASE_GAME || phase == PHASE_NEXT_WAVE)
+  if (lives && phase == PHASE_GAME || phase == PHASE_NEXT_WAVE || phase == PHASE_PAUSED)
     sprite_render(&cannon, cannonX, cannonY, buf, y, GREEN);
 
   // draw shoots
-  if (phase == PHASE_GAME || phase == PHASE_NEXT_WAVE)
+  if (phase == PHASE_GAME || phase == PHASE_NEXT_WAVE || phase == PHASE_PAUSED)
     for (int i = 0 ; i < SHOOTS ; ++i)
     {
       if (shootY[i] >= 0)
@@ -554,13 +574,16 @@ void renderLine(uint8_t *buf, int y)
   if (phase == PHASE_GAMEOVER)
     sprite_render(&gameOver, GAMEOVER_X, GAMEOVER_Y, buf, y, WHITE);
 
+  if (phase == PHASE_PAUSED)
+    sprite_render(&pause, PAUSE_X, PAUSE_Y, buf, y, WHITE);
+
   // draw lives
   int lifeWidth = sprite_width(&life);
   for (int i = 0 ; i < lives ; ++i)
     sprite_render(&life, LIFE_X + (lifeWidth + 1) * i, LIFE_Y, buf, y, GREEN);
 
   // draw wave
-  if (phase == PHASE_GAME || phase == PHASE_NEXT_WAVE)
+  if (phase == PHASE_GAME || phase == PHASE_NEXT_WAVE || phase == PHASE_PAUSED)
   {
     sprite_render(&waveSprite, WAVE_X, WAVE_Y, buf, y, CYAN);
     render_digits(wave, 2, WAVE_X + 1 + sprite_width(&waveSprite), WAVE_Y, buf, y, WHITE);
@@ -592,6 +615,8 @@ bool intersectRect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h
 
 int step;
 int frame;
+unsigned long pauseTime = 0;
+int pauseTimeout = 500;
 
 void loop() {
 
@@ -671,35 +696,38 @@ void loop() {
     frameTime = curTime;
 
     // moving invaders
-    for (int i = 0 ; i < wave ; ++i)
+    if (phase != PHASE_PAUSED)
     {
-      if (invaderType[i])
+      for (int i = 0 ; i < wave ; ++i)
       {
-        int x = invaderX[i];
-        int y = invaderY[i];
-        y += invaderSpeedY[i];
-        if (y < WIDTH - 18)
+        if (invaderType[i])
         {
-          x -= pgm_read_byte(&trajectory[invaderPhase[i]]);
-          invaderPhase[i] = (invaderPhase[i] + invaderSpeedX[i]) % T_LENGTH;
-          x += pgm_read_byte(&trajectory[invaderPhase[i]]);
-        }
-        else
-        {
-          invaderSpeedY[i] = 5;
-        }
-        invaderX[i] = x;
-        invaderY[i] = y;
-
-        if (y > WIDTH)
-        {
-          invaderType[i] = 0;
-          if (lives)
+          int x = invaderX[i];
+          int y = invaderY[i];
+          y += invaderSpeedY[i];
+          if (y < WIDTH - 18)
           {
-            if (score >= 5)
-              score -= 5;
-            else
-              score = 0;
+            x -= pgm_read_byte(&trajectory[invaderPhase[i]]);
+            invaderPhase[i] = (invaderPhase[i] + invaderSpeedX[i]) % T_LENGTH;
+            x += pgm_read_byte(&trajectory[invaderPhase[i]]);
+          }
+          else
+          {
+            invaderSpeedY[i] = 5;
+          }
+          invaderX[i] = x;
+          invaderY[i] = y;
+  
+          if (y > WIDTH)
+          {
+            invaderType[i] = 0;
+            if (lives)
+            {
+              if (score >= 5)
+                score -= 5;
+              else
+                score = 0;
+            }
           }
         }
       }
@@ -725,6 +753,20 @@ void loop() {
           invaderSpeedX[i] = rand() % 4 + 1;
           break;
         }
+    }
+  }
+
+  // pause
+  if (step == 0 && ((*pauseport & pausepin) == 0) && (curTime >= pauseTime))
+  {
+    pauseTime = curTime + pauseTimeout;
+    if (phase == PHASE_PAUSED)
+    {
+      phase = PHASE_GAME;
+    }
+    else if ((phase == PHASE_GAME) || (phase == PHASE_NEXT_WAVE))
+    {
+      phase = PHASE_PAUSED;
     }
   }
 
@@ -810,7 +852,7 @@ void loop() {
       {
         cannonX = cannonX - step;
       }
-      if (((*fireport & firepin) == 0 || (*fire2port & fire2pin) == 0)
+      if (((*fireport & firepin) == 0)
         && curTime - shootTime >= 500) // shoot
       {
         shootTime = curTime;
@@ -828,7 +870,7 @@ void loop() {
   }
 
   if (step == 0 && phase == PHASE_LOGO
-      && ((*fireport & firepin) == 0 || (*fire2port & fire2pin) == 0))
+      && ((*fireport & firepin) == 0))
   {
     started = true;
     phase = PHASE_GAME;
