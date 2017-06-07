@@ -1,15 +1,11 @@
 #include <stdint.h>
 #include "libgame.h"
 
-//#define LEFT BUTTON_SW
-//#define RIGHT BUTTON_NW
-//#define FIRE BUTTON_SE
-//#define PAUSE BUTTON_NE
-
-#define LEFT BUTTON_SW
-#define RIGHT BUTTON_SE
-#define FIRE BUTTON_NE
+#define LEFT BUTTON_SE
+#define RIGHT BUTTON_NE
+#define FIRE BUTTON_SW
 #define PAUSE BUTTON_NW
+
 
 int16_t hiscore = 0;
 int16_t score;
