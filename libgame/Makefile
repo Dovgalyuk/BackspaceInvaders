@@ -1,5 +1,10 @@
 # try: make help
 #
+
+ifeq ($(OS),Windows_NT)
+include Makefile-win32
+else
+
 include /usr/share/arduino/Arduino.mk
 ARDUINO_DIR = /usr/share/arduino
 # list boards with: make show_boards
@@ -12,3 +17,5 @@ MONITOR_CMD = moni -config ACM0-9600.cfg
 # ARDUINO_PORT = /dev/ttyUSB0
 #OPTIMIZATION_FLAGS = -Os -fexpensive-optimizations -fstrength-reduce
 OPTIMIZATION_FLAGS = -O3
+
+endif

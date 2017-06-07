@@ -12,6 +12,6 @@ MONITOR_CMD = moni -config ACM0-9600.cfg
 OPTIMIZATION_FLAGS = -O3
 
 ARDUINO_DIR = ../System/arduino
+ARDMK_DIR = /arduino-mk
 MONITOR_PORT = com3
-
-include ../System/arduino-mk/Arduino.mk
+include /arduino-mk/Arduino.mk
