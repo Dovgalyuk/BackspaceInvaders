@@ -220,14 +220,13 @@ void game_draw_text(const char *s, int x, int y, uint8_t color)
         int pos = (int)*c * 5;
         for (int i = 0; i < 5; ++i)
         {
-            uint8_t d = ((const unsigned char*)pgm_read_pointer(&font_data))[pos + i];
+            uint8_t d = pgm_read_byte_near(font_data + pos + i);
             if ((d >> (game_render_y - yy)) & 1)
                 game_render_buf[xx + i] = game_make_color(color);
         }
         xx += 6;
     }
 }
-
 
 bool game_is_button_pressed(uint8_t button)
 {
