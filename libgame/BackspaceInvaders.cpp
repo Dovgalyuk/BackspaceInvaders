@@ -2,8 +2,8 @@
 #include "libgame.h"
 #include "games.h"
 
-#define LEFT BUTTON_SE
-#define RIGHT BUTTON_NE
+#define LEFT BUTTON_NE
+#define RIGHT BUTTON_SE
 #define FIRE BUTTON_SW
 #define PAUSE BUTTON_NW
 
@@ -42,7 +42,6 @@ struct BackspaceInvadersData
 {
     int16_t hiscore;
     int16_t score;
-    uint8_t logo_color;
     uint8_t phase;
     int invaderX[INVADERS];
     int invaderY[INVADERS];
@@ -429,7 +428,7 @@ void BackspaceInvaders_render()
 
     // draw logo
     if (data->phase == PHASE_LOGO)
-        game_draw_sprite(&logo, (WIDTH - game_sprite_width(&logo)) / 2, (WIDTH - game_sprite_height(&logo)) / 2, data->logo_color);
+        game_draw_sprite(&logo, (WIDTH - game_sprite_width(&logo)) / 2, (WIDTH - game_sprite_height(&logo)) / 2, rand() % 64);
 }
 
 bool intersectRect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
@@ -447,7 +446,6 @@ int pauseTimeout = 500;
 unsigned long lastTime = 0;
 
 void BackspaceInvaders_update(unsigned long delta) {
-    data->logo_color = rand() % 64;
     unsigned long curTime = lastTime + delta;
     lastTime = curTime;
     if (curTime - data->frameTime >= 160)
@@ -656,7 +654,6 @@ void BackspaceInvaders_prepare()
 {
     data->hiscore = 0;
     data->score = 0;
-    data->logo_color = 0;
     data->phase = PHASE_LOGO;
     data->cannonX = (WIDTH - game_sprite_width(&cannon)) / 2;
     data->cannonY = WIDTH - game_sprite_height(&cannon);
