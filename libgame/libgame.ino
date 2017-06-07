@@ -20,6 +20,9 @@
 #define WIDTH 64
 
 
+// THIS IS USUALLY NOT FAST ENOUGH FOR ARDUINO
+#define COLOR_6BIT 0
+
 #define DATAPORT PORTD
 #define DATADIR  DDRD
 #define SCLKPORT PORTB
@@ -54,7 +57,10 @@ int get_rand()
 
 void game_setup(int ups)
 {
-    ticks     = 1000 / ups;
+    if (ups)
+        ticks = 1000 / ups;
+    else
+        ticks = 0;
     sclkpin   = digitalPinToBitMask(CLK);
     latport   = portOutputRegister(digitalPinToPort(LAT));
     latpin    = digitalPinToBitMask(LAT);
@@ -114,13 +120,21 @@ void game_setup(int ups)
     digitalWrite(IB2, HIGH);
 }
 
+uint8_t game_make_color_channel(uint8_t channel)
+{
+    return (color_channel < channel);
+}
 
 uint8_t game_make_color(uint8_t color)
 {
     // RRGGBB -> BGR
-    return (color >> (4 + color_channel) & 1) |
-           ((color >> (2 + color_channel) & 1) << 1) |
-           ((color >> color_channel & 1) << 2);
+    // return (color >> (4 + color_channel) & 1) |
+    //        ((color >> (2 + color_channel) & 1) << 1) |
+    //        ((color >> color_channel & 1) << 2);
+    
+    return (game_make_color_channel((color >> 4) & 3)) |
+           (game_make_color_channel((color >> 2) & 3) << 1) |
+           (game_make_color_channel(color & 3) << 2);
 }
 
 
@@ -206,7 +220,7 @@ void game_draw_text(const char *s, int x, int y, uint8_t color)
         int pos = (int)*c * 5;
         for (int i = 0; i < 5; ++i)
         {
-            uint8_t d = font_data[pos + i];
+            uint8_t d = ((const unsigned char*)pgm_read_pointer(&font_data))[pos + i];
             if ((d >> (game_render_y - yy)) & 1)
                 game_render_buf[xx + i] = game_make_color(color);
         }
@@ -246,72 +260,71 @@ void game_render_line(uint8_t *buf, int y)
         buf[63] = 0;
 }
 
-void game_run()
+void loop()
 {
-    while (1)
+    int tock;
+    int tick;
+    tock = SCLKPORT;
+    tick = tock | sclkpin;
+
+    *oeport |= oepin;
+    *latport   |= latpin;
+    *latport   &= ~latpin;
+
+    if (step & 1)
+        *addraport |= addrapin;
+    else
+        *addraport &= ~addrapin;
+    if (step & 2)
+        *addrbport |= addrbpin;
+    else
+        *addrbport &= ~addrbpin;
+    if (step & 4)
+        *addrcport |= addrcpin;
+    else
+        *addrcport &= ~addrcpin;
+    if (step & 8)
+        *addrdport |= addrdpin;
+    else
+        *addrdport &= ~addrdpin;
+    step = (step + 1) & 0xf;
+    #if defined(COLOR_6BIT) && COLOR_6BIT
+    if (step == 0)
+        color_channel = (color_channel + 1) % 3;
+    #endif
+
+    *oeport &= ~oepin;
+
+    int y1 = step; 
+    int y2 = (step + 16); 
+    int y3 = (step + 32); 
+    int y4 = (step + 48);
+
+    uint8_t lines[4][WIDTH];
+    game_render_line(lines[0], y1);
+    game_render_line(lines[1], y2);
+    game_render_line(lines[2], y3);
+    game_render_line(lines[3], y4);
+
+    for (int i = 0 ; i < WIDTH ; ++i)
     {
-        int tock;
-        int tick;
-        tock = SCLKPORT;
-        tick = tock | sclkpin;
+        DATAPORT = (lines[3][i] << 5) | (lines[2][i] << 2);
+        SCLKPORT = tick; // Clock lo
+        SCLKPORT = tock; // Clock hi
+    }
 
-        *oeport |= oepin;
-        *latport   |= latpin;
-        *latport   &= ~latpin;
+    for (int i = 0 ; i < WIDTH ; ++i)
+    {
+        DATAPORT = (lines[1][i] << 5) | (lines[0][i] << 2);
+        SCLKPORT = tick; // Clock lo
+        SCLKPORT = tock; // Clock hi
+    }
 
-        if (step & 1)
-            *addraport |= addrapin;
-        else
-            *addraport &= ~addrapin;
-        if (step & 2)
-            *addrbport |= addrbpin;
-        else
-            *addrbport &= ~addrbpin;
-        if (step & 4)
-            *addrcport |= addrcpin;
-        else
-            *addrcport &= ~addrcpin;
-        if (step & 8)
-            *addrdport |= addrdpin;
-        else
-            *addrdport &= ~addrdpin;
-        step = (step + 1) & 0xf;
-        if (step == 0)
-            color_channel ^= 1;
+    unsigned long cur_time = millis();
 
-        *oeport &= ~oepin;
-
-        int y1 = step; 
-        int y2 = (step + 16); 
-        int y3 = (step + 32); 
-        int y4 = (step + 48);
-
-        uint8_t lines[4][WIDTH];
-        game_render_line(lines[0], y1);
-        game_render_line(lines[1], y2);
-        game_render_line(lines[2], y3);
-        game_render_line(lines[3], y4);
-
-        for (int i = 0 ; i < WIDTH ; ++i)
-        {
-            DATAPORT = (lines[3][i] << 5) | (lines[2][i] << 2);
-            SCLKPORT = tick; // Clock lo
-            SCLKPORT = tock; // Clock hi
-        }
-
-        for (int i = 0 ; i < WIDTH ; ++i)
-        {
-            DATAPORT = (lines[1][i] << 5) | (lines[0][i] << 2);
-            SCLKPORT = tick; // Clock lo
-            SCLKPORT = tock; // Clock hi
-        }
-
-        unsigned long cur_time = millis();
-
-        if (cur_time - last_update >= ticks && step == 0 && color_channel == 0)
-        {
-            update(cur_time - last_update);
-            last_update = cur_time;
-        }
+    if ((cur_time - last_update >= ticks) && step == 0 && color_channel == 0)
+    {
+        update(cur_time - last_update);
+        last_update = cur_time;
     }
 }

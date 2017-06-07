@@ -1,13 +1,20 @@
 #include <stdint.h>
 #include "libgame.h"
 
+//#define LEFT BUTTON_SW
+//#define RIGHT BUTTON_NW
+//#define FIRE BUTTON_SE
+//#define PAUSE BUTTON_NE
+
 #define LEFT BUTTON_SW
-#define RIGHT BUTTON_NW
-#define FIRE BUTTON_SE
-#define PAUSE BUTTON_NE
+#define RIGHT BUTTON_SE
+#define FIRE BUTTON_NE
+#define PAUSE BUTTON_NW
 
 int16_t hiscore = 0;
 int16_t score;
+
+uint8_t logo_color = 0;
 
 
 ////////////////////////////////////////////////////////////
@@ -427,7 +434,7 @@ void render()
 
     // draw logo
     if (phase == PHASE_LOGO)
-        game_draw_sprite(&logo, (WIDTH - game_sprite_width(&logo)) / 2, (WIDTH - game_sprite_height(&logo)) / 2, get_rand() % 64);
+        game_draw_sprite(&logo, (WIDTH - game_sprite_width(&logo)) / 2, (WIDTH - game_sprite_height(&logo)) / 2, logo_color);
 }
 
 bool intersectRect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
@@ -445,6 +452,7 @@ int pauseTimeout = 500;
 unsigned long lastTime = 0;
 
 void update(unsigned long delta) {
+    logo_color = rand() % 64;
     unsigned long curTime = lastTime + delta;
     lastTime = curTime;
     if (curTime - frameTime >= 160)
@@ -498,15 +506,15 @@ void update(unsigned long delta) {
                     if (lives)
                         --waveInvaders;
                     invadeTime = curTime;
-                    invaderType[i] = get_rand() % INVADER_TYPES + 1;
-                    int offs = get_rand() % (WIDTH - T_WIDTH - invader_width(invaderType[i]));
-                    invaderPhase[i] = get_rand() % T_LENGTH;
+                    invaderType[i] = rand() % INVADER_TYPES + 1;
+                    int offs = rand() % (WIDTH - T_WIDTH - invader_width(invaderType[i]));
+                    invaderPhase[i] = rand() % T_LENGTH;
                     invaderX[i] = offs + pgm_read_byte(&trajectory[invaderPhase[i]]);
                     invaderY[i] = 0;
                     const int colors[5] = {BLUE, RED, GREEN, PURPLE, BROWN};
-                    invaderColor[i] = colors[get_rand() % 5];
-                    invaderSpeedY[i] = get_rand() % 2 + 1;
-                    invaderSpeedX[i] = get_rand() % 4 + 1;
+                    invaderColor[i] = colors[rand() % 5];
+                    invaderSpeedY[i] = rand() % 2 + 1;
+                    invaderSpeedX[i] = rand() % 4 + 1;
                     break;
                 }
         }
@@ -649,9 +657,7 @@ void update(unsigned long delta) {
     }
 }
 
-int main()
+void setup()
 {
-    game_setup(25);
-    game_run();
-    return 0;
+    game_setup(0);
 }

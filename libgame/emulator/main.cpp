@@ -19,6 +19,7 @@ const int SCALE = 8;
 
 sf::VertexArray *screen;
 sf::RenderWindow *window;
+sf::Clock running_clock;
 
 bool btnSWpressed = false;
 bool btnNWpressed = false;
@@ -29,10 +30,11 @@ bool paused = false;
 
 void render();
 void update(unsigned long delta);
+void setup();
 
-int get_rand()
+unsigned long millis()
 {
-    return rand();
+    return running_clock.getElapsedTime().asMilliseconds();
 }
 
 uint8_t game_sprite_width(const struct game_sprite *s)
@@ -96,7 +98,10 @@ void game_setup(int ups)
         }
     }
     window = new sf::RenderWindow(sf::VideoMode(SCALE * WIDTH, SCALE * HEIGHT), "emulator", sf::Style::Close);
-    window->setFramerateLimit(ups);
+    if (ups)
+        window->setFramerateLimit(ups);
+    else
+        window->setFramerateLimit(30);
 }
 
 void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color)
@@ -143,8 +148,10 @@ void game_draw_text(const char *s, int x, int y, uint8_t color)
     }
 }
 
-void game_run()
+int main()
 {
+    setup();
+    running_clock.restart();
     sf::Clock elapsed;
     while (window->isOpen())
     {
@@ -180,4 +187,7 @@ void game_run()
             render();
         }
     }
+
+    return 0;
 }
+

@@ -10,4 +10,5 @@ MONITOR_CMD = moni -config ACM0-9600.cfg
 #ARDUINO_PORT = /dev/serial/by-id/usb-Arduino_LLC_Arduino_Leonardo-if00
 # ARDUINO_PORT = /dev/ttyACM0
 # ARDUINO_PORT = /dev/ttyUSB0
-OPTIMIZATION_FLAGS = -Os -fexpensive-optimizations -fstrength-reduce
+#OPTIMIZATION_FLAGS = -Os -fexpensive-optimizations -fstrength-reduce
+OPTIMIZATION_FLAGS = -O3

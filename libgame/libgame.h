@@ -4,20 +4,11 @@
 #ifdef EMULATED
 #define DATA
 #include <cstdlib>
-#ifndef min
-#define min(a,b) (((a)<(b))?(a):(b))
-#endif
-#ifndef max
-#define max(a,b) (((a)>(b))?(a):(b))
-#endif
+#include <algorithm>
+#include <cstdint>
 using namespace std;
 #else
-#ifndef min
-#define min(a,b) (((a)<(b))?(a):(b))
-#endif
-#ifndef max
-#define max(a,b) (((a)>(b))?(a):(b))
-#endif
+#include <Arduino.h>
 #include <avr/pgmspace.h>
 #define DATA PROGMEM
 #endif
@@ -47,7 +38,7 @@ using namespace std;
 #define BUTTON_NE 4
 #else
 #define BUTTON_SW 11
-#define BUTTON_NW 18
+#define BUTTON_NW A4
 #define BUTTON_SE 12
 #define BUTTON_NE 13
 #endif
@@ -84,8 +75,5 @@ void game_draw_text(const char *s, int x, int y, uint8_t color); // text is draw
 bool game_is_button_pressed(uint8_t button);
 
 void game_setup(int ups);
-void game_run();
-
-int get_rand();
 
 #endif 
