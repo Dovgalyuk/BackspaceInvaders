@@ -39,6 +39,7 @@ static uint8_t color_channel = 0;
 // IMPLEMENT THIS IN YOUR GAME
 void render(); // render sprites
 void update(unsigned long delta); // update logic (ms since last update), enforced by ups / ticks
+void prepare(); // prepare execution
 
 
 static volatile uint8_t
@@ -257,6 +258,11 @@ void game_render_line(uint8_t *buf, int y)
     // fix broken LED
     if (y == 63)
         buf[63] = 0;
+}
+
+void setup()
+{
+    prepare();
 }
 
 void loop()

@@ -30,7 +30,7 @@ bool paused = false;
 
 void render();
 void update(unsigned long delta);
-void setup();
+void prepare();
 
 unsigned long millis()
 {
@@ -150,7 +150,7 @@ void game_draw_text(const char *s, int x, int y, uint8_t color)
 
 int main()
 {
-    setup();
+    prepare();
     running_clock.restart();
     sf::Clock elapsed;
     while (window->isOpen())

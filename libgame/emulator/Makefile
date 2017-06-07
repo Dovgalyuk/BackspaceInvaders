@@ -1,3 +1,3 @@
 all:
 	mkdir -p bin
-	$(CXX) -DEMULATED main.cpp ../Application.cpp -lsfml-graphics -lsfml-window -lsfml-system -o bin/emulator -std=c++11
+	$(CXX) -DEMULATED -Wno-narrowing main.cpp ../*.cpp -lsfml-graphics -lsfml-window -lsfml-system -o bin/emulator -std=c++11

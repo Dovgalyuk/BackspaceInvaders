@@ -3,9 +3,11 @@
 
 #ifdef EMULATED
 #define DATA
-#include <cstdlib>
+#include <stdlib.h>
+#include <string>
 #include <algorithm>
-#include <cstdint>
+#include <stdint.h>
+#include <string.h>
 using namespace std;
 #else
 #include <Arduino.h>
@@ -56,6 +58,22 @@ using namespace std;
 #define BROWN (RED + GREEN)
 #define WHITE 63
 
+typedef void(*game_function_prepare)();
+typedef void(*game_function_render)();
+typedef void(*game_function_update)(unsigned long);
+
+struct game_instance
+{
+    char name[11];
+    game_function_prepare prepare;
+    game_function_render render;
+    game_function_update update;
+    uint8_t eeprom_size;
+    uint8_t data_size;
+    void** data;
+};
+
+// 8 game instances leave 1983 bytes in RAM
 
 struct game_sprite
 {
