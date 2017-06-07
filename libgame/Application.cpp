@@ -23,7 +23,7 @@ game_instance* ptr;
 void prepare()
 {
     N_GAMES = sizeof(instances) / sizeof(game_instance);
-    game_setup(0);
+    game_setup(30);
 }
 
 void update(unsigned long delta)
