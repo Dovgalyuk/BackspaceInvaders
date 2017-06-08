@@ -122,11 +122,11 @@ void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color)
     }
 }
 
-void game_draw_text(const char *s, int x, int y, uint8_t color)
+void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
     int xx = x;
     int yy = y;
-    for (const char *c = s; *c; ++c)
+    for (const uint8_t *c = s; *c; ++c)
     {
         if (*c == '\n')
         {
@@ -139,7 +139,7 @@ void game_draw_text(const char *s, int x, int y, uint8_t color)
     }
 }
 
-void game_draw_char(char c, int x, int y, uint8_t color)
+void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 {
     int pos = (int)c * 7;
     for (int i = 0; i < 5; ++i)

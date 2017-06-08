@@ -6,7 +6,7 @@
 struct TesterData
 {
     uint8_t symb;
-    char buf[8];
+    unsigned char buf[8];
     bool pressed;
     unsigned long last_upd;
     unsigned long cur_time;
@@ -19,7 +19,7 @@ void Tester_prepare()
     data->symb = 0;
     data->last_upd = 0;
     data->cur_time = 0;
-    sprintf(data->buf, "Page %d", data->symb / 70 + 1);
+    sprintf((char*)data->buf, "Page %d", data->symb / 70 + 1);
 }
 
 void Tester_render()
@@ -45,7 +45,7 @@ void Tester_update(unsigned long delta)
             data->symb = 0;
         else
             data->symb += 70;
-        sprintf(data->buf, "Page %d", data->symb / 70 + 1);
+        sprintf((char*)data->buf, "Page %d", data->symb / 70 + 1);
     }
 }
 

@@ -204,11 +204,11 @@ void game_draw_pixel(int x, int y, uint8_t color)
     }
 }
 
-void game_draw_text(const char *s, int x, int y, uint8_t color)
+void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
     int xx = x;
     int yy = y;
-    for (const char *c = s; *c; ++c)
+    for (const uint8_t *c = s; *c; ++c)
     {
         if (*c == '\n')
         {
@@ -221,7 +221,7 @@ void game_draw_text(const char *s, int x, int y, uint8_t color)
     }
 }
 
-void game_draw_char(char c, int x, int y, uint8_t color)
+void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 {
     if (game_render_y < y || game_render_y >= y + 7)
         return;

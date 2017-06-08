@@ -64,7 +64,7 @@ typedef void(*game_function_update)(unsigned long);
 
 struct game_instance
 {
-    char name[11];
+    unsigned char name[11];
     game_function_prepare prepare;
     game_function_render render;
     game_function_update update;
@@ -88,8 +88,8 @@ uint8_t game_sprite_width(const struct game_sprite *s);
 uint8_t game_sprite_height(const struct game_sprite *s);
 void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color);
 void game_draw_pixel(int x, int y, uint8_t color);
-void game_draw_text(const char *s, int x, int y, uint8_t color); // text is drawn with default 5x7 font
-void game_draw_char(char s, int x, int y, uint8_t color); // char is drawn with default 5x7 font
+void game_draw_text(const uint8_t *s, int x, int y, uint8_t color); // text is drawn with default 5x7 font
+void game_draw_char(uint8_t c, int x, int y, uint8_t color); // char is drawn with default 5x7 font
 
 bool game_is_button_pressed(uint8_t button);
 
