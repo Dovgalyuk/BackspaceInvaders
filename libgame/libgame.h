@@ -68,8 +68,8 @@ struct game_instance
     game_function_prepare prepare;
     game_function_render render;
     game_function_update update;
-    uint8_t eeprom_size;
-    uint8_t data_size;
+    uint16_t eeprom_size;
+    uint16_t data_size;
     void** data;
 };
 
