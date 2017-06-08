@@ -16,6 +16,6 @@ MONITOR_CMD = moni -config ACM0-9600.cfg
 # ARDUINO_PORT = /dev/ttyACM0
 # ARDUINO_PORT = /dev/ttyUSB0
 #OPTIMIZATION_FLAGS = -Os -fexpensive-optimizations -fstrength-reduce
-OPTIMIZATION_FLAGS = -O3
+OPTIMIZATION_FLAGS = -O3 -fexec-charset=windows-1251
 
 endif

@@ -3,7 +3,7 @@ OBJ_FILES := $(notdir $(CPP_FILES:.cpp=.o))
 CXXFLAGS := -DEMULATED -Wno-narrowing 
 
 emulator: main.cpp ../*.cpp
-	$(CXX) -DEMULATED -Wall main.cpp ../*.cpp -lsfml-graphics -lsfml-window -lsfml-system -mwindows -o emulator -std=c++11
+	$(CXX) -DEMULATED -Wall -fexec-charset=windows-1251 main.cpp ../*.cpp -lsfml-graphics -lsfml-window -lsfml-system -mwindows -o emulator -std=c++11
 
 clean:
 	rm -f emulator*
