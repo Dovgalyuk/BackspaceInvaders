@@ -216,16 +216,24 @@ void game_draw_text(const char *s, int x, int y, uint8_t color)
             yy += 8;
             continue;
         }
-        if (game_render_y < yy || game_render_y >= yy + 7)
-            continue;
-        int pos = (int)*c * 5;
-        for (int i = 0; i < 5; ++i)
-        {
-            uint8_t d = pgm_read_byte_near(font_data + pos + i);
-            if ((d >> (game_render_y - yy)) & 1)
-                game_render_buf[xx + i] = game_make_color(color);
-        }
+        game_draw_char(*c, xx, yy, color);
         xx += 6;
+    }
+}
+
+void game_draw_char(char c, int x, int y, uint8_t color)
+{
+    if (game_render_y < y || game_render_y >= y + 7)
+        return;
+    int dy = game_render_y - y;
+    int pos = (int)c * 7 + dy;
+    uint8_t d = pgm_read_byte_near(font_data + pos);
+    for (int i = 0; i < 5; ++i)
+    {
+        if ((d >> i) & 1)
+        {
+            game_render_buf[x + i] = game_make_color(color);
+        }
     }
 }
 
