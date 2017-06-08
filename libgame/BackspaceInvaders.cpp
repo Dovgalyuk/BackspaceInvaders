@@ -118,7 +118,7 @@ const uint8_t invader4lines[] DATA = {
 
 #define INVADER_TYPES 4
 const game_sprite invaders[INVADER_TYPES] DATA = {
-    {8, 8, 1, invader1lines}, {11, 8, 2, invader2lines},
+    {8, 7, 1, invader1lines}, {11, 8, 2, invader2lines},
     {13, 10, 2, invader3lines}, {8, 8, 1, invader4lines}
 };
 
