@@ -17,8 +17,6 @@
 #define C   A2
 #define D   A3
 
-#define WIDTH 64
-
 // THIS CAN DEGRADE PERFORMANCE 
 #define COLOR_6BIT 0
 
@@ -48,19 +46,16 @@ static uint8_t
     sclkpin, latpin, oepin, addrapin, addrbpin, addrcpin, addrdpin,
     btnSWpin, btnNWpin, btnSEpin, btnNEpin;
 
-
-int get_rand()
-{
-    return rand();
-}
-
-
-void game_setup(int ups)
+void game_set_ups(int ups)
 {
     if (ups)
         ticks = 1000 / ups;
     else
-        ticks = 0;
+        ticks = 1;
+}
+
+void game_setup()
+{
     sclkpin   = digitalPinToBitMask(CLK);
     latport   = portOutputRegister(digitalPinToPort(LAT));
     latpin    = digitalPinToBitMask(LAT);
@@ -185,7 +180,7 @@ void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color)
     uint8_t height = game_sprite_height(s);
     uint8_t ry = game_render_y + (y & 0xf0);
     if (ry < y) ry += 0x10;
-    if (ry >= WIDTH) return;
+    if (ry >= HEIGHT) return;
     if (ry < (y + height))
     {
         game_sprite_render_line(s, x, y, game_make_color(color), ry);

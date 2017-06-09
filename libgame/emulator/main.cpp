@@ -82,7 +82,7 @@ bool game_is_button_pressed(uint8_t button)
     return false;
 }
 
-void game_setup(int ups)
+void game_setup()
 {
     screen = new sf::VertexArray(sf::Quads, WIDTH * HEIGHT * 4);
     for (int x = 0; x < WIDTH; ++x)
@@ -98,6 +98,10 @@ void game_setup(int ups)
         }
     }
     window = new sf::RenderWindow(sf::VideoMode(SCALE * WIDTH, SCALE * HEIGHT), "emulator", sf::Style::Close);
+}
+
+void game_set_ups(int ups)
+{
     if (ups)
         window->setFramerateLimit(ups);
     else

@@ -93,6 +93,7 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color); // char is drawn wi
 
 bool game_is_button_pressed(uint8_t button);
 
-void game_setup(int ups);
+void game_set_ups(int ups);
+void game_setup();
 
 #endif 

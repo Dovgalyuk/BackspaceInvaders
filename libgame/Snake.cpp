@@ -6,8 +6,6 @@
 #define LEFT BUTTON_NE
 #define RIGHT BUTTON_SE
 
-#define TICKS 40
-
 #define GAMEOVER_X 16
 #define GAMEOVER_Y 24
 
@@ -47,8 +45,6 @@ struct SnakeData
     uint8_t snakeLen;
     uint8_t velX;
     uint8_t velY;
-    uint8_t cur_time;
-    uint8_t last_tick;
     uint8_t foodX;
     uint8_t foodY;
     bool leftPressed;
@@ -80,6 +76,7 @@ void generateFood()
 
 void Snake_prepare()
 {
+    game_set_ups(30);
     data->phase = PHASE_GAME;
     data->snakeLen = 3;
     data->snakeX[0] = 17;
@@ -90,8 +87,6 @@ void Snake_prepare()
     data->snakeY[2] = 16;
     data->velX = 1;
     data->velY = 0;
-    data->cur_time = 0;
-    data->last_tick = 0;
     data->leftPressed = false;
     data->rightPressed = false;
     generateFood();
@@ -119,8 +114,7 @@ void Snake_render()
 
 void Snake_update(unsigned long delta)
 {
-    data->cur_time += delta;
-    if ((data->cur_time - data->last_tick >= TICKS) && (data->phase == PHASE_GAME))
+    if (data->phase == PHASE_GAME)
     {
         for (int i = 0; i < 128; ++i)
             data->collision[i] = 0;
