@@ -19,8 +19,7 @@
 
 #define WIDTH 64
 
-
-// THIS IS USUALLY NOT FAST ENOUGH FOR ARDUINO
+// THIS CAN DEGRADE PERFORMANCE 
 #define COLOR_6BIT 0
 
 #define DATAPORT PORTD
@@ -149,13 +148,14 @@ uint8_t game_sprite_height(const struct game_sprite *s)
     return pgm_read_byte(&s->height);
 }
 
-const uint8_t *game_sprite_line(const struct game_sprite *s, int line)
+const uint8_t *game_sprite_line(const struct game_sprite *s, uint8_t line)
 {
     return pgm_read_byte(&s->lineSize) * line + (const uint8_t*)pgm_read_pointer(&s->lines);
 }
 
-void game_sprite_render_line(const struct game_sprite *s, int x, int line, uint8_t *buf, uint8_t color)
+void game_sprite_render_line(const struct game_sprite *s, int x, uint8_t y, int8_t color, uint8_t ry)
 {
+    uint8_t line = ry - y;
     uint8_t mask = 0x80;
     uint8_t width = game_sprite_width(s);
     const uint8_t *ptr = game_sprite_line(s, line);
@@ -167,7 +167,7 @@ void game_sprite_render_line(const struct game_sprite *s, int x, int line, uint8
         {
             if (spr & mask)
             {
-                buf[xx] = color;
+                game_render_buf[xx + (ry >> 4 << 6)] = color;
             }
         }
         mask >>= 1;
@@ -180,42 +180,36 @@ void game_sprite_render_line(const struct game_sprite *s, int x, int line, uint8
     }
 }
 
-void game_sprite_render_impl(const struct game_sprite *s, int x, int y, uint8_t *buf, int line, uint8_t color)
-{
-    uint8_t height = game_sprite_height(s);
-    if (line >= y && line < y + height)
-    {
-        game_sprite_render_line(s, x, line - y, buf, color);
-    }
-}
-
 void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color)
 {
-    game_sprite_render_impl(s, x, y, game_render_buf, game_render_y, game_make_color(color));
+    uint8_t height = game_sprite_height(s);
+    uint8_t ry = game_render_y + (y & 0xf0);
+    if (ry < y) ry += 0x10;
+    if (ry >= WIDTH) return;
+    if (ry < (y + height))
+    {
+        game_sprite_render_line(s, x, y, game_make_color(color), ry);
+    }
 }
 
 void game_draw_pixel(int x, int y, uint8_t color)
 {
     if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
         return;
-    if (game_render_y == y)
+    if (game_render_y == (y & 0xf))
     {
-        game_render_buf[x] = game_make_color(color);
+        game_render_buf[x + (y >> 4 << 6)] = game_make_color(color);
     }
 }
 
 void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
+    if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + 7)
+        return;
     int xx = x;
     int yy = y;
     for (const uint8_t *c = s; *c; ++c)
     {
-        if (*c == '\n')
-        {
-            xx = x;
-            yy += 8;
-            continue;
-        }
         game_draw_char(*c, xx, yy, color);
         xx += 6;
     }
@@ -223,16 +217,16 @@ void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 
 void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 {
-    if (game_render_y < y || game_render_y >= y + 7)
+    if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + 7)
         return;
-    int dy = game_render_y - y;
-    int pos = (int)c * 7 + dy;
+    int dy = game_render_y - (y & 0xf) + (y & 0xf0);
+    int pos = (int)c * 7 + (game_render_y - (y & 0xf));
     uint8_t d = pgm_read_byte_near(font_data + pos);
     for (int i = 0; i < 5; ++i)
     {
         if ((d >> i) & 1)
         {
-            game_render_buf[x + i] = game_make_color(color);
+            game_render_buf[x + i + (y >> 4 << 6)] = game_make_color(color);
         }
     }
 }
@@ -254,7 +248,7 @@ bool game_is_button_pressed(uint8_t button)
 
 void game_render_line(uint8_t *buf, int y)
 {
-    for (int i = 0; i < WIDTH; ++i)
+    for (int i = 0; i < WIDTH * 4; ++i)
         buf[i] = 0;
 
     game_render_buf = buf;
@@ -262,10 +256,6 @@ void game_render_line(uint8_t *buf, int y)
 
     // call user render()
     render();
-
-    // fix broken LED
-    if (y == 63)
-        buf[63] = 0;
 }
 
 void setup()
@@ -308,16 +298,18 @@ void loop()
 
     *oeport &= ~oepin;
 
-    int y1 = step; 
+    /*int y1 = step; 
     int y2 = (step + 16); 
     int y3 = (step + 32); 
-    int y4 = (step + 48);
+    int y4 = (step + 48);*/
 
     uint8_t lines[4][WIDTH];
+    game_render_line((uint8_t*)lines, step);
+    /*
     game_render_line(lines[0], y1);
     game_render_line(lines[1], y2);
     game_render_line(lines[2], y3);
-    game_render_line(lines[3], y4);
+    game_render_line(lines[3], y4);*/
 
     for (int i = 0 ; i < WIDTH ; ++i)
     {
@@ -335,7 +327,7 @@ void loop()
 
     unsigned long cur_time = millis();
 
-    if ((cur_time - last_update >= ticks) && step == 0 && color_channel == 0)
+    if ((cur_time - last_update >= ticks) && step == 0)
     {
         update(cur_time - last_update);
         last_update = cur_time;

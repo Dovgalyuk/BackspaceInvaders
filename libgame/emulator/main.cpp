@@ -128,12 +128,6 @@ void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
     int yy = y;
     for (const uint8_t *c = s; *c; ++c)
     {
-        if (*c == '\n')
-        {
-            xx = x;
-            yy += 8;
-            continue;
-        }
         game_draw_char(*c, xx, yy, color);
         xx += 6;
     }
