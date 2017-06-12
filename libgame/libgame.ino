@@ -201,12 +201,10 @@ void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
     if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + 7)
         return;
-    int xx = x;
-    int yy = y;
     for (const uint8_t *c = s; *c; ++c)
     {
-        game_draw_char(*c, xx, yy, color);
-        xx += 6;
+        game_draw_char(*c, x, y, color);
+        x += 6;
     }
 }
 
@@ -214,7 +212,6 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 {
     if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + 7)
         return;
-    int dy = game_render_y - (y & 0xf) + (y & 0xf0);
     int pos = (int)c * 7 + (game_render_y - (y & 0xf));
     uint8_t d = pgm_read_byte_near(font_data + pos);
     for (int i = 0; i < 5; ++i)
@@ -236,6 +233,7 @@ bool game_is_button_pressed(uint8_t button)
     case BUTTON_NW: pin = btnNWpin; port = btnNWport; break;
     case BUTTON_SE: pin = btnSEpin; port = btnSEport; break;
     case BUTTON_NE: pin = btnNEpin; port = btnNEport; break;
+    default: return false;
     }
 
     return ((*port & pin) == 0);
@@ -293,18 +291,8 @@ void loop()
 
     *oeport &= ~oepin;
 
-    /*int y1 = step; 
-    int y2 = (step + 16); 
-    int y3 = (step + 32); 
-    int y4 = (step + 48);*/
-
     uint8_t lines[4][WIDTH];
     game_render_line((uint8_t*)lines, step);
-    /*
-    game_render_line(lines[0], y1);
-    game_render_line(lines[1], y2);
-    game_render_line(lines[2], y3);
-    game_render_line(lines[3], y4);*/
 
     for (int i = 0 ; i < WIDTH ; ++i)
     {

@@ -49,6 +49,7 @@ struct SnakeData
     uint8_t foodY;
     bool leftPressed;
     bool rightPressed;
+    bool half;
     uint8_t collision[128];
 
 };
@@ -76,7 +77,7 @@ void generateFood()
 
 void Snake_prepare()
 {
-    game_set_ups(30);
+    game_set_ups(60);
     data->phase = PHASE_GAME;
     data->snakeLen = 3;
     data->snakeX[0] = 17;
@@ -89,7 +90,15 @@ void Snake_prepare()
     data->velY = 0;
     data->leftPressed = false;
     data->rightPressed = false;
+    data->half = false;
     generateFood();
+}
+
+int velsign(int x)
+{
+    if (x == 0) return 0;
+    if (x == 1) return 1;
+    return -1;
 }
 
 void Snake_render()
@@ -100,10 +109,31 @@ void Snake_render()
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2 + 1, RED);
     for (int i = 0; i < data->snakeLen; ++i)
     {
-        game_draw_pixel(data->snakeX[i] * 2, data->snakeY[i] * 2, GREEN);
-        game_draw_pixel(data->snakeX[i] * 2 + 1, data->snakeY[i] * 2, GREEN);
-        game_draw_pixel(data->snakeX[i] * 2, data->snakeY[i] * 2 + 1, GREEN);
-        game_draw_pixel(data->snakeX[i] * 2 + 1, data->snakeY[i] * 2 + 1, GREEN);
+        int x = data->snakeX[i] * 2 + WIDTH;
+        int y = data->snakeY[i] * 2 + HEIGHT;
+        if (data->half && i == data->snakeLen - 1)
+        {
+            x += velsign((data->snakeX[i - 1] - data->snakeX[i] + 64) % 32);
+            y += velsign((data->snakeY[i - 1] - data->snakeY[i] + 64) % 32);
+            game_draw_pixel(x % 64, y % 64, GREEN);
+            game_draw_pixel((x + 1) % 64, y % 64, GREEN);
+            game_draw_pixel(x % 64, (y + 1) % 64, GREEN);
+            game_draw_pixel((x + 1) % 64, (y + 1) % 64, GREEN);
+            continue;
+        }
+        game_draw_pixel(x % 64, y % 64, GREEN);
+        game_draw_pixel((x + 1) % 64, y % 64, GREEN);
+        game_draw_pixel(x % 64, (y + 1) % 64, GREEN);
+        game_draw_pixel((x + 1) % 64, (y + 1) % 64, GREEN);
+        if (data->half && i == 0)
+        {
+            x += data->velX;
+            y += data->velY;
+            game_draw_pixel(x % 64, y % 64, GREEN);
+            game_draw_pixel((x + 1) % 64, y % 64, GREEN);
+            game_draw_pixel(x % 64, (y + 1) % 64, GREEN);
+            game_draw_pixel((x + 1) % 64, (y + 1) % 64, GREEN);
+        }
     }
 
     if (data->phase == PHASE_GAMEOVER)
@@ -114,7 +144,8 @@ void Snake_render()
 
 void Snake_update(unsigned long delta)
 {
-    if (data->phase == PHASE_GAME)
+    if (data->phase == PHASE_GAME) data->half = !data->half; else data->half = false;
+    if (data->phase == PHASE_GAME && !data->half)
     {
         for (int i = 0; i < 128; ++i)
             data->collision[i] = 0;
