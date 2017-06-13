@@ -134,19 +134,19 @@ void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
     for (const uint8_t *c = s; *c; ++c)
     {
         game_draw_char(*c, xx, yy, color);
-        xx += 6;
+        xx += FONT_WIDTH + 1;
     }
 }
 
 void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 {
-    int pos = (int)c * 7;
-    for (int i = 0; i < 5; ++i)
+    int pos = (int)c * FONT_HEIGHT;
+    for (int i = 0; i < FONT_WIDTH; ++i)
     {
-        for (int j = 0; j < 7; ++j)
+        for (int j = 0; j < FONT_HEIGHT; ++j)
         {
             uint8_t d = font_data[pos + j];
-            if ((d >> (4 - i)) & 1)
+            if ((d >> (FONT_WIDTH - 1 - i)) & 1)
                 game_draw_pixel(x + i, y + j, color);
         }
     }

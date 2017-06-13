@@ -6,20 +6,20 @@
 
 #define AVAIL_SPACE 1400
 
-uint8_t N_GAMES;
+static uint8_t N_GAMES;
 
-uint8_t sel = 0;
+static uint8_t sel = 0;
 
-uint8_t memory[AVAIL_SPACE];
+static uint8_t memory[AVAIL_SPACE];
 
-unsigned long cur_time = 0;
+static unsigned long cur_time = 0;
 
-unsigned long btn_timeout = 0;
+static unsigned long btn_timeout = 0;
 #define BUTTON_DELAY 200
 
-bool game_running = false;
-bool btn_pressed = false;
-game_instance* ptr;
+static bool game_running = false;
+static bool btn_pressed = false;
+static game_instance* ptr;
 void prepare()
 {
     N_GAMES = sizeof(instances) / sizeof(game_instance);
@@ -33,12 +33,12 @@ void update(unsigned long delta)
     if (!game_running)
     {
         if (cur_time < btn_timeout) return;
-        if ((game_is_button_pressed(BUTTON_SE)) && sel < (N_GAMES - 1) && instances[sel + 1].name)
+        if ((game_is_button_pressed(BUTTON_SE)) && sel < (N_GAMES - 1))
         {
             sel++;
             btn_timeout = cur_time + BUTTON_DELAY;
         }
-        if ((game_is_button_pressed(BUTTON_NE)) && sel > 0 && instances[sel - 1].name)
+        if ((game_is_button_pressed(BUTTON_NE)) && sel > 0)
         {
             sel--;
             btn_timeout = cur_time + BUTTON_DELAY;

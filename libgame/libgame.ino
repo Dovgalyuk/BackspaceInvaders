@@ -32,7 +32,9 @@ static uint8_t step = 0;
 // RENDER VARS
 static int game_render_y;
 static uint8_t *game_render_buf;
+#if defined(COLOR_6BIT) && COLOR_6BIT
 static uint8_t color_channel = 0;
+#endif
 
 // IMPLEMENT THIS IN YOUR GAME
 void render(); // render sprites
@@ -116,21 +118,24 @@ void game_setup()
     digitalWrite(IB2, HIGH);
 }
 
+#if defined(COLOR_6BIT) && COLOR_6BIT
 uint8_t game_make_color_channel(uint8_t channel)
 {
     return (color_channel < channel);
 }
+#endif
 
 uint8_t game_make_color(uint8_t color)
 {
-    // RRGGBB -> BGR
-    // return (color >> (4 + color_channel) & 1) |
-    //        ((color >> (2 + color_channel) & 1) << 1) |
-    //        ((color >> color_channel & 1) << 2);
-    
+    #if defined(COLOR_6BIT) && COLOR_6BIT
     return (game_make_color_channel((color >> 4) & 3)) |
            (game_make_color_channel((color >> 2) & 3) << 1) |
            (game_make_color_channel(color & 3) << 2);
+    #else
+    return (color >> 5 & 1) |
+           (color >> 3 & 1) << 1 |
+           (color >> 1 & 1) << 2;
+    #endif
 }
 
 
@@ -163,7 +168,7 @@ void game_sprite_render_line(const struct game_sprite *s, int x, uint8_t y, int8
         {
             if (spr & mask)
             {
-                game_render_buf[xx + (ry >> 4 << 6)] = color;
+                game_render_buf[xx + ((ry & 0xf0) << 2)] = color;
             }
         }
         mask >>= 1;
@@ -194,32 +199,32 @@ void game_draw_pixel(int x, int y, uint8_t color)
         return;
     if (game_render_y == (y & 0xf))
     {
-        game_render_buf[x + (y >> 4 << 6)] = game_make_color(color);
+        game_render_buf[x + ((y & 0xf0) << 2)] = game_make_color(color);
     }
 }
 
 void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
-    if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + 7)
+    if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + FONT_HEIGHT)
         return;
     for (const uint8_t *c = s; *c; ++c)
     {
         game_draw_char(*c, x, y, color);
-        x += 6;
+        x += FONT_WIDTH + 1;
     }
 }
 
 void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 {
-    if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + 7)
+    if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + FONT_HEIGHT)
         return;
-    int pos = (int)c * 7 + (game_render_y - (y & 0xf));
+    int pos = (int)c * FONT_HEIGHT + (game_render_y - (y & 0xf));
     uint8_t d = pgm_read_byte_near(font_data + pos);
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < FONT_WIDTH; ++i)
     {
-        if ((d >> (4 - i)) & 1)
+        if ((d >> (FONT_WIDTH - 1 - i)) & 1)
         {
-            game_render_buf[x + i + (y >> 4 << 6)] = game_make_color(color);
+            game_render_buf[x + i + ((y & 0xf0) << 2)] = game_make_color(color);
         }
     }
 }

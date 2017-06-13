@@ -4,6 +4,9 @@
 #include "libgame.h"
 #include "binary.h"
 
+#define FONT_WIDTH 5
+#define FONT_HEIGHT 7
+
 // windows-1251 encoded font
 static const unsigned char font_data[] DATA = {
     // 0x00 (N/A)

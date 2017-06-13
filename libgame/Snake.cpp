@@ -9,22 +9,25 @@
 #define GAMEOVER_X 16
 #define GAMEOVER_Y 24
 
+#define FIELD_WIDTH 32
+#define FIELD_HEIGHT 32
+
 const uint8_t gameOverLines[] DATA = {
-    0x3e, 0x38, 0xc6, 0xfe,
-    0x60, 0x6c, 0xee, 0xc0,
-    0xc0, 0xc6, 0xfe, 0xc0,
-    0xce, 0xc6, 0xfe, 0xfc,
-    0xc6, 0xfe, 0xd6, 0xc0,  
-    0x66, 0xc6, 0xc6, 0xc0,
-    0x3e, 0xc6, 0xc6, 0xfe,
-    0x00, 0x00, 0x00, 0x00,
-    0x7c, 0xc6, 0xfe, 0xfc,
-    0xc6, 0xc6, 0xc0, 0xc6,
-    0xc6, 0xc6, 0xc0, 0xc6,
-    0xc6, 0xc6, 0xfc, 0xce,
-    0xc6, 0x6c, 0xc0, 0xf8,
-    0xc6, 0x38, 0xc0, 0xdc,
-    0x7c, 0x10, 0xfe, 0xce
+    B00111110, B00111000, B11000110, B11111110,
+    B01100000, B01101100, B11101110, B11000000,
+    B11000000, B11000110, B11111110, B11000000,
+    B11001110, B11000110, B11111110, B11111100,
+    B11000110, B11111110, B11010110, B11000000,  
+    B01100110, B11000110, B11000110, B11000000,
+    B00111110, B11000110, B11000110, B11111110,
+    B00000000, B00000000, B00000000, B00000000,
+    B01111100, B11000110, B11111110, B11111100,
+    B11000110, B11000110, B11000000, B11000110,
+    B11000110, B11000110, B11000000, B11000110,
+    B11000110, B11000110, B11111100, B11001110,
+    B11000110, B01101100, B11000000, B11111000,
+    B11000110, B00111000, B11000000, B11011100,
+    B01111100, B00010000, B11111110, B11001110
 };
 
 const game_sprite gameOver DATA = {
@@ -50,6 +53,8 @@ struct SnakeData
     bool leftPressed;
     bool rightPressed;
     bool half;
+    uint8_t snakeBegin;
+    uint8_t snakeEnd;
 
 };
 static SnakeData* data;
@@ -59,8 +64,8 @@ void generateFood()
     while (1)
     {
         bool ok = true;
-        data->foodX = rand() % 32;
-        data->foodY = rand() % 32;
+        data->foodX = rand() % FIELD_WIDTH;
+        data->foodY = rand() % FIELD_HEIGHT;
         for (int i = 0; i < data->snakeLen; ++i)
         {
             if (data->snakeX[i] == data->foodX && data->snakeY[i] == data->foodY)
@@ -85,6 +90,8 @@ void Snake_prepare()
     data->snakeY[1] = 16;
     data->snakeX[2] = 15;
     data->snakeY[2] = 16;
+    data->snakeBegin = 0;
+    data->snakeEnd = 3;
     data->velX = 1;
     data->velY = 0;
     data->leftPressed = false;
@@ -106,33 +113,34 @@ void Snake_render()
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2, RED);
     game_draw_pixel(data->foodX * 2, data->foodY * 2 + 1, RED);
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2 + 1, RED);
-    for (int i = 0; i < data->snakeLen; ++i)
+    for (int i = data->snakeBegin, count = 0; count < data->snakeLen; ++count)
     {
         int x = data->snakeX[i] * 2 + WIDTH;
         int y = data->snakeY[i] * 2 + HEIGHT;
-        if (data->half && i == data->snakeLen - 1)
+        if (data->half && (i + 1) % MAXLEN == data->snakeEnd)
         {
-            x += velsign((data->snakeX[i - 1] - data->snakeX[i] + 64) % 32);
-            y += velsign((data->snakeY[i - 1] - data->snakeY[i] + 64) % 32);
-            game_draw_pixel(x % 64, y % 64, GREEN);
-            game_draw_pixel((x + 1) % 64, y % 64, GREEN);
-            game_draw_pixel(x % 64, (y + 1) % 64, GREEN);
-            game_draw_pixel((x + 1) % 64, (y + 1) % 64, GREEN);
+            x += velsign((data->snakeX[i - 1] - data->snakeX[i] + WIDTH) % FIELD_WIDTH);
+            y += velsign((data->snakeY[i - 1] - data->snakeY[i] + HEIGHT) % FIELD_HEIGHT);
+            game_draw_pixel(x % WIDTH, y % HEIGHT, GREEN);
+            game_draw_pixel((x + 1) % WIDTH, y % HEIGHT, GREEN);
+            game_draw_pixel(x % WIDTH, (y + 1) % HEIGHT, GREEN);
+            game_draw_pixel((x + 1) % WIDTH, (y + 1) % HEIGHT, GREEN);
             continue;
         }
-        game_draw_pixel(x % 64, y % 64, GREEN);
-        game_draw_pixel((x + 1) % 64, y % 64, GREEN);
-        game_draw_pixel(x % 64, (y + 1) % 64, GREEN);
-        game_draw_pixel((x + 1) % 64, (y + 1) % 64, GREEN);
-        if (data->half && i == 0)
+        game_draw_pixel(x % WIDTH, y % HEIGHT, GREEN);
+        game_draw_pixel((x + 1) % WIDTH, y % HEIGHT, GREEN);
+        game_draw_pixel(x % WIDTH, (y + 1) % HEIGHT, GREEN);
+        game_draw_pixel((x + 1) % WIDTH, (y + 1) % HEIGHT, GREEN);
+        if (data->half && i == data->snakeBegin)
         {
             x += data->velX;
             y += data->velY;
-            game_draw_pixel(x % 64, y % 64, GREEN);
-            game_draw_pixel((x + 1) % 64, y % 64, GREEN);
-            game_draw_pixel(x % 64, (y + 1) % 64, GREEN);
-            game_draw_pixel((x + 1) % 64, (y + 1) % 64, GREEN);
+            game_draw_pixel(x % WIDTH, y % HEIGHT, GREEN);
+            game_draw_pixel((x + 1) % WIDTH, y % HEIGHT, GREEN);
+            game_draw_pixel(x % WIDTH, (y + 1) % HEIGHT, GREEN);
+            game_draw_pixel((x + 1) % WIDTH, (y + 1) % HEIGHT, GREEN);
         }
+        i = (i + 1) % MAXLEN;
     }
 
     if (data->phase == PHASE_GAMEOVER)
@@ -146,33 +154,31 @@ void Snake_update(unsigned long delta)
     if (data->phase == PHASE_GAME) data->half = !data->half; else data->half = false;
     if (data->phase == PHASE_GAME && !data->half)
     {
-        for (int i = 0; i < data->snakeLen; ++i)
-        {
-            int bit = data->snakeX[i] * 32 + data->snakeY[i];
-        }
         // move snake forward
-        for (int i = data->snakeLen; i >= 1; --i)
-        {
-            data->snakeX[i] = data->snakeX[i - 1];
-            data->snakeY[i] = data->snakeY[i - 1];
-        }
-        data->snakeX[0] = (data->snakeX[0] + data->velX) % 32;
-        data->snakeY[0] = (data->snakeY[0] + data->velY) % 32;
-        if (data->snakeX[0] == data->foodX && data->snakeY[0] == data->foodY)
+        int newX = (data->snakeX[data->snakeBegin] + data->velX) % FIELD_WIDTH;
+        int newY = (data->snakeY[data->snakeBegin] + data->velY) % FIELD_HEIGHT;
+        data->snakeBegin = (data->snakeBegin + MAXLEN - 1) % MAXLEN;
+        data->snakeEnd = (data->snakeEnd + MAXLEN - 1) % MAXLEN;
+        data->snakeX[data->snakeBegin] = newX;
+        data->snakeY[data->snakeBegin] = newY; 
+        if (newX == data->foodX && newY == data->foodY)
         {
             if (data->snakeLen < MAXLEN)
             {
                 data->snakeLen++;
+                data->snakeEnd = (data->snakeEnd + 1) % MAXLEN;
             }
             generateFood();
         }
-        for (int i = 1; i < data->snakeLen; ++i)
+        for (int i = (data->snakeBegin + 1) % MAXLEN, count = 1; count < data->snakeLen; ++count)
         {
-            if (data->snakeX[0] == data->snakeX[i] && data->snakeY[0] == data->snakeY[i])
+            if (newX == data->snakeX[i] && newY == data->snakeY[i])
             {
                 // game over
                 data->phase = PHASE_GAMEOVER;
+                break;
             }
+            i = (i + 1) % MAXLEN;
         }
     }
     if (data->phase == PHASE_GAME)
