@@ -1,5 +1,4 @@
 #include "libgame.h"
-#include "games.h"
 
 // 70 symbols per screen
 

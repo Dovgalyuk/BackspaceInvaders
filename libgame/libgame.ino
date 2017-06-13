@@ -1,5 +1,6 @@
 #include "libgame.h"
 #include "font.h"
+#include "sprite.h"
 
 // Arduino configuration
 

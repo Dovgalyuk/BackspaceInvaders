@@ -12,8 +12,9 @@
 
 #include <SFML/Graphics.hpp>
 #include <stdint.h>
-#include "../libgame.h"
-#include "../font.h"
+#include <libgame.h>
+#include <sprite.h>
+#include <font.h>
 
 const int SCALE = 8;
 

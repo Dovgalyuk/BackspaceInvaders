@@ -1,5 +1,5 @@
 #include "libgame.h"
-#include "games.h"
+#include "sprite.h"
 
 #define MAXLEN 64
 

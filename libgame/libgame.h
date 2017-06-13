@@ -73,20 +73,6 @@ struct game_instance
     void** data;
 };
 
-// 8 game instances leave 1983 bytes in RAM
-
-struct game_sprite
-{
-    uint8_t width;
-    uint8_t height;
-    uint8_t lineSize;
-    const uint8_t *lines;
-};
-
-
-uint8_t game_sprite_width(const struct game_sprite *s);
-uint8_t game_sprite_height(const struct game_sprite *s);
-void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color);
 void game_draw_pixel(int x, int y, uint8_t color);
 void game_draw_text(const uint8_t *s, int x, int y, uint8_t color); // text is drawn with default 5x7 font
 void game_draw_char(uint8_t c, int x, int y, uint8_t color); // char is drawn with default 5x7 font
