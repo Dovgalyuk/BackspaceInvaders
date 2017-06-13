@@ -146,7 +146,7 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
         for (int j = 0; j < 7; ++j)
         {
             uint8_t d = font_data[pos + j];
-            if ((d >> i) & 1)
+            if ((d >> (4 - i)) & 1)
                 game_draw_pixel(x + i, y + j, color);
         }
     }

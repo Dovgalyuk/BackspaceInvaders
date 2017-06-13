@@ -217,7 +217,7 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
     uint8_t d = pgm_read_byte_near(font_data + pos);
     for (int i = 0; i < 5; ++i)
     {
-        if ((d >> i) & 1)
+        if ((d >> (4 - i)) & 1)
         {
             game_render_buf[x + i + (y >> 4 << 6)] = game_make_color(color);
         }
