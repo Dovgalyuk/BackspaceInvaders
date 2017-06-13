@@ -50,7 +50,6 @@ struct SnakeData
     bool leftPressed;
     bool rightPressed;
     bool half;
-    uint8_t collision[128];
 
 };
 static SnakeData* data;
@@ -147,12 +146,9 @@ void Snake_update(unsigned long delta)
     if (data->phase == PHASE_GAME) data->half = !data->half; else data->half = false;
     if (data->phase == PHASE_GAME && !data->half)
     {
-        for (int i = 0; i < 128; ++i)
-            data->collision[i] = 0;
         for (int i = 0; i < data->snakeLen; ++i)
         {
             int bit = data->snakeX[i] * 32 + data->snakeY[i];
-            data->collision[bit / 8] |= (1 << (bit % 8));
         }
         // move snake forward
         for (int i = data->snakeLen; i >= 1; --i)
@@ -170,17 +166,13 @@ void Snake_update(unsigned long delta)
             }
             generateFood();
         }
-        for (int i = 0; i < 128; ++i)
-            data->collision[i] = 0;
-        for (int i = 0; i < data->snakeLen; ++i)
+        for (int i = 1; i < data->snakeLen; ++i)
         {
-            int bit = data->snakeX[i] * 32 + data->snakeY[i];
-            if (data->collision[bit / 8] & (1 << (bit % 8)))
+            if (data->snakeX[0] == data->snakeX[i] && data->snakeY[0] == data->snakeY[i])
             {
                 // game over
                 data->phase = PHASE_GAMEOVER;
             }
-            data->collision[bit / 8] |= (1 << (bit % 8));
         }
     }
     if (data->phase == PHASE_GAME)
