@@ -65,7 +65,7 @@ void generateFood()
         bool ok = true;
         data->foodX = rand() % FIELD_WIDTH;
         data->foodY = rand() % FIELD_HEIGHT;
-        for (int i = data->snakeBegin, i != data->snakeEnd, i = (i + 1) % MAXLEN)
+        for (int i = data->snakeBegin; i != data->snakeEnd; i = (i + 1) % MAXLEN)
         {
             if (data->snakeX[i] == data->foodX && data->snakeY[i] == data->foodY)
             {
@@ -111,7 +111,7 @@ void Snake_render()
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2, RED);
     game_draw_pixel(data->foodX * 2, data->foodY * 2 + 1, RED);
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2 + 1, RED);
-    for (int i = data->snakeBegin, i != data->snakeEnd, i = (i + 1) % MAXLEN)
+    for (int i = data->snakeBegin; i != data->snakeEnd; i = (i + 1) % MAXLEN)
     {
         int x = data->snakeX[i] * 2 + WIDTH;
         int y = data->snakeY[i] * 2 + HEIGHT;
@@ -164,7 +164,7 @@ void Snake_update(unsigned long delta)
                 data->snakeEnd = (data->snakeEnd + 1) % MAXLEN;
             generateFood();
         }
-        for (int i = (data->snakeBegin + 1) % MAXLEN, i != data->snakeEnd, i = (i + 1) % MAXLEN)
+        for (int i = (data->snakeBegin + 1) % MAXLEN; i != data->snakeEnd; i = (i + 1) % MAXLEN)
         {
             if (newX == data->snakeX[i] && newY == data->snakeY[i])
             {
