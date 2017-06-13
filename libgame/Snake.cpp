@@ -45,7 +45,6 @@ struct SnakeData
     uint8_t phase;
     uint8_t snakeX[MAXLEN + 1];
     uint8_t snakeY[MAXLEN + 1];
-    uint8_t snakeLen;
     uint8_t velX;
     uint8_t velY;
     uint8_t foodX;
@@ -66,7 +65,7 @@ void generateFood()
         bool ok = true;
         data->foodX = rand() % FIELD_WIDTH;
         data->foodY = rand() % FIELD_HEIGHT;
-        for (int i = 0; i < data->snakeLen; ++i)
+        for (int i = data->snakeBegin, i != data->snakeEnd, i = (i + 1) % MAXLEN)
         {
             if (data->snakeX[i] == data->foodX && data->snakeY[i] == data->foodY)
             {
@@ -83,7 +82,6 @@ void Snake_prepare()
 {
     game_set_ups(60);
     data->phase = PHASE_GAME;
-    data->snakeLen = 3;
     data->snakeX[0] = 17;
     data->snakeY[0] = 16;
     data->snakeX[1] = 16;
@@ -113,7 +111,7 @@ void Snake_render()
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2, RED);
     game_draw_pixel(data->foodX * 2, data->foodY * 2 + 1, RED);
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2 + 1, RED);
-    for (int i = data->snakeBegin, count = 0; count < data->snakeLen; ++count)
+    for (int i = data->snakeBegin, i != data->snakeEnd, i = (i + 1) % MAXLEN)
     {
         int x = data->snakeX[i] * 2 + WIDTH;
         int y = data->snakeY[i] * 2 + HEIGHT;
@@ -140,7 +138,6 @@ void Snake_render()
             game_draw_pixel(x % WIDTH, (y + 1) % HEIGHT, GREEN);
             game_draw_pixel((x + 1) % WIDTH, (y + 1) % HEIGHT, GREEN);
         }
-        i = (i + 1) % MAXLEN;
     }
 
     if (data->phase == PHASE_GAMEOVER)
@@ -163,14 +160,11 @@ void Snake_update(unsigned long delta)
         data->snakeY[data->snakeBegin] = newY; 
         if (newX == data->foodX && newY == data->foodY)
         {
-            if (data->snakeLen < MAXLEN)
-            {
-                data->snakeLen++;
+            if ((data->snakeEnd + 1) % MAXLEN != data->snakeBegin)
                 data->snakeEnd = (data->snakeEnd + 1) % MAXLEN;
-            }
             generateFood();
         }
-        for (int i = (data->snakeBegin + 1) % MAXLEN, count = 1; count < data->snakeLen; ++count)
+        for (int i = (data->snakeBegin + 1) % MAXLEN, i != data->snakeEnd, i = (i + 1) % MAXLEN)
         {
             if (newX == data->snakeX[i] && newY == data->snakeY[i])
             {
@@ -178,7 +172,6 @@ void Snake_update(unsigned long delta)
                 data->phase = PHASE_GAMEOVER;
                 break;
             }
-            i = (i + 1) % MAXLEN;
         }
     }
     if (data->phase == PHASE_GAME)
