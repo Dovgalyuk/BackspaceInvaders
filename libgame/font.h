@@ -937,13 +937,13 @@ static const unsigned char font_data[] DATA = {
     B00100,
 
     // 0x67 (g)
-    B00000,
-    B00000,
-    B01110,
-    B10011,
+    B01111,
+    B10001,
     B10011,
     B01101,
     B00001,
+    B00001,
+    B01110,
 
     // 0x68 (h)
     B10000,
@@ -1103,9 +1103,9 @@ static const unsigned char font_data[] DATA = {
     B00000,
     B10001,
     B10001,
-    B01111,
-    B00001,
-    B10001,
+    B01010,
+    B00100,
+    B11000,
 
     // 0x7a (z)
     B00000,
@@ -2247,8 +2247,8 @@ static const unsigned char font_data[] DATA = {
     B10101,
     B10101,
     B10101,
+    B10101,
     B11111,
-    B00000,
 
     // 0xf9 (щ)
     B00000,
@@ -2291,7 +2291,7 @@ static const unsigned char font_data[] DATA = {
     B00000,
     B01110,
     B10001,
-    B00110,
+    B00111,
     B10001,
     B01110,
 

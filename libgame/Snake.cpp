@@ -204,7 +204,7 @@ void Snake_update(unsigned long delta)
 }
 
 game_instance Snake = {
-    "Змейка",
+    "Snake",
     Snake_prepare,
     Snake_render,
     Snake_update,
