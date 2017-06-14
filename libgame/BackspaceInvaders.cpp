@@ -662,7 +662,7 @@ void BackspaceInvaders_prepare()
 
 
 game_instance BackspaceInvaders = {
-    "Invaders",//"Налётчики",
+    "Invaders",
     BackspaceInvaders_prepare,
     BackspaceInvaders_render,
     BackspaceInvaders_update,

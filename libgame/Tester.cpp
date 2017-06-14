@@ -1,11 +1,17 @@
 #include "libgame.h"
+#include "font.h"
 
-// 70 symbols per screen
+#define PER_PAGE 64
+#define COLS 8
+#define ROWS 8
+#define TOTAL 256
+
+#define PREV BUTTON_NE
+#define NEXT BUTTON_SE
 
 struct TesterData
 {
     uint8_t symb;
-    unsigned char buf[8];
     bool pressed;
     unsigned long last_upd;
     unsigned long cur_time;
@@ -18,38 +24,50 @@ void Tester_prepare()
     data->symb = 0;
     data->last_upd = 0;
     data->cur_time = 0;
-    sprintf((char*)data->buf, "Page %d", data->symb / 70 + 1);
+}
+
+unsigned char to_hex(uint8_t n)
+{
+    if (n < 10) return '0' + n;
+    return 'A' + n - 10;
 }
 
 void Tester_render()
 {
     int i = 0;
-    for (unsigned char c = data->symb; (c < data->symb + 70) && (c < 255); ++c)
+    for (unsigned char c = data->symb; i < PER_PAGE; ++c)
     {
-        int x = (i % 10) * 6;
-        int y = (i / 10 + 1) * 8;
+        int x = (i % COLS + 2) * (FONT_WIDTH + 1);
+        int y = (i / ROWS) * (FONT_HEIGHT + 1);
         game_draw_char(c, x, y, WHITE);
         i++;
     }
-    game_draw_text(data->buf, 0, 0, RED);
+    for (uint8_t l = 0; l < ROWS; ++l)
+    {
+        unsigned char first = data->symb + COLS * l;
+        game_draw_char(to_hex(first >> 4), 0, l * (FONT_HEIGHT + 1), RED);
+        game_draw_char(to_hex(first & 0xf), FONT_WIDTH + 1, l * (FONT_HEIGHT + 1), RED);
+    }
 }
 
 void Tester_update(unsigned long delta)
 {
-    data->cur_time += delta;
-    if (data->cur_time - data->last_upd >= 5000)
+    if (!data->pressed)
     {
-        data->last_upd = data->cur_time;
-        if (data->symb >= 186)
-            data->symb = 0;
-        else
-            data->symb += 70;
-        sprintf((char*)data->buf, "Page %d", data->symb / 70 + 1);
+        if (game_is_button_pressed(NEXT))
+        {
+            data->symb = (data->symb + PER_PAGE) % TOTAL;
+        }
+        if (game_is_button_pressed(PREV))
+        {
+            data->symb = (data->symb - PER_PAGE + TOTAL) % TOTAL;
+        }
     }
+    data->pressed = game_is_button_pressed(NEXT) || game_is_button_pressed(PREV);
 }
 
 game_instance Tester = {
-    "Font",//"Шрифты",
+    "Font",
     Tester_prepare,
     Tester_render,
     Tester_update,
