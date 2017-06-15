@@ -9,6 +9,8 @@
 #define FIRE BUTTON_SW
 #define PAUSE BUTTON_NW
 
+#define SAVEGAME "invaders"
+
 ////////////////////////////////////////////////////////////
 // Phases
 ////////////////////////////////////////////////////////////
@@ -592,7 +594,7 @@ void BackspaceInvaders_update(unsigned long delta) {
                         if (data->score > data->hiscore)
                         {
                             data->hiscore = data->score;
-                            uint8_t fd = storage_open("bsi__score", STORAGE_WRITE);
+                            uint8_t fd = storage_open(SAVEGAME, STORAGE_WRITE);
                             storage_write_word(fd, data->hiscore);
                             storage_close(fd);
                         }
@@ -662,7 +664,7 @@ void BackspaceInvaders_prepare()
     data->phase = PHASE_LOGO;
     data->cannonX = (WIDTH - game_sprite_width(&cannon)) / 2;
     data->cannonY = WIDTH - game_sprite_height(&cannon);
-    uint8_t fd = storage_open("bsi__score", STORAGE_READ);
+    uint8_t fd = storage_open(SAVEGAME, STORAGE_READ);
     if (fd != STORAGE_FAILED)
     {
         data->hiscore = storage_read_word(fd);
