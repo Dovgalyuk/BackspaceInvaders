@@ -680,3 +680,4 @@ game_instance BackspaceInvaders = {
     sizeof(BackspaceInvadersData),
     (void**)(&data)
 };
+

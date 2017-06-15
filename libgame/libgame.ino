@@ -575,23 +575,70 @@ void loop()
 
     *oeport &= ~oepin;
 
-    uint8_t lines[4][WIDTH];
+    uint8_t lines[4 * WIDTH];
     game_render_line((uint8_t*)lines, step);
 
-    for (int i = 0 ; i < WIDTH ; ++i)
+/*
+    // Old output loop
+    for (uint8_t i = 0 ; i < WIDTH ; ++i)
     {
-        DATAPORT = (lines[3][i] << 5) | (lines[2][i] << 2);
+        DATAPORT = (lines[3 * WIDTH + i] << 5) | (lines[2 * WIDTH + i] << 2);
         SCLKPORT = tick; // Clock lo
         SCLKPORT = tock; // Clock hi
     }
 
     for (int i = 0 ; i < WIDTH ; ++i)
     {
-        DATAPORT = (lines[1][i] << 5) | (lines[0][i] << 2);
+        DATAPORT = (lines[1 * WIDTH + i] << 5) | (lines[0 * WIDTH + i] << 2);
         SCLKPORT = tick; // Clock lo
         SCLKPORT = tock; // Clock hi
     }
+*/
+    uint8_t *line1 = &lines[3 * WIDTH];
+    uint8_t *line2 = &lines[2 * WIDTH];
+    uint8_t const8 = 8;
+    uint8_t const4 = 4;
+    uint8_t tmp1, tmp2;
+    #define pew asm volatile(                 \
+      "ld  %[tmp1], %a[ptr1]+"       "\n\t"   \
+      "mul %[tmp1], %[c8]"           "\n\t"   \
+      "ld  %[tmp1], %a[ptr2]+"       "\n\t"   \
+      "or  r0, %[tmp1]"              "\n\t"   \
+      "mul r0, %[c4]"                "\n\t"   \
+      "out %[data]    , r0"          "\n\t"   \
+      "out %[clk]     , %[tick]"     "\n\t"   \
+      "out %[clk]     , %[tock]"     "\n"     \
+      :  [ptr1] "+e" (line1),                 \
+         [ptr2] "+e" (line2),                 \
+         [tmp1] "=r" (tmp1),                  \
+         [c8] "+r" (const8),                  \
+         [c4] "+r" (const4)                   \
+      :  [data] "I" (_SFR_IO_ADDR(DATAPORT)), \
+         [clk]  "I" (_SFR_IO_ADDR(SCLKPORT)), \
+         [tick] "r" (tick),                   \
+         [tock] "r" (tock): "r0", "r1");
 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+
+    line1 = &lines[1 * WIDTH];
+    line2 = &lines[0 * WIDTH];
+
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    
     unsigned long cur_time = millis();
 
     if ((cur_time - last_update >= ticks) && step == 0)
