@@ -1,4 +1,5 @@
 #include "libgame.h"
+#include "storage.h"
 
 #define _OUTPUT_INSTANCES
 #include "games.h"
@@ -24,6 +25,7 @@ void prepare()
 {
     N_GAMES = sizeof(instances) / sizeof(game_instance);
     game_setup();
+    storage_init();
     game_set_ups(60);
 }
 

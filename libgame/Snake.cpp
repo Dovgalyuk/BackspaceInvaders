@@ -1,10 +1,11 @@
 #include "libgame.h"
 #include "sprite.h"
+#include "binary.h"
 
 #define MAXLEN 64
 
-#define LEFT BUTTON_NE
-#define RIGHT BUTTON_SE
+#define LEFT BUTTON_SE
+#define RIGHT BUTTON_SW
 
 #define GAMEOVER_X 16
 #define GAMEOVER_Y 24
@@ -80,7 +81,7 @@ void generateFood()
 
 void Snake_prepare()
 {
-    game_set_ups(60);
+    game_set_ups(40);
     data->phase = PHASE_GAME;
     data->snakeX[0] = 17;
     data->snakeY[0] = 16;

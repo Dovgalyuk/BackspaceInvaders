@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "storage.h"
 #include "libgame.h"
 #include "binary.h"
 #include "sprite.h"
@@ -591,6 +592,9 @@ void BackspaceInvaders_update(unsigned long delta) {
                         if (data->score > data->hiscore)
                         {
                             data->hiscore = data->score;
+                            uint8_t fd = storage_open("bsi__score", STORAGE_WRITE);
+                            storage_write_word(fd, data->hiscore);
+                            storage_close(fd);
                         }
                     }
                     break;
@@ -658,6 +662,12 @@ void BackspaceInvaders_prepare()
     data->phase = PHASE_LOGO;
     data->cannonX = (WIDTH - game_sprite_width(&cannon)) / 2;
     data->cannonY = WIDTH - game_sprite_height(&cannon);
+    uint8_t fd = storage_open("bsi__score", STORAGE_READ);
+    if (fd != STORAGE_FAILED)
+    {
+        data->hiscore = storage_read_word(fd);
+        storage_close(fd);
+    }
 }
 
 
