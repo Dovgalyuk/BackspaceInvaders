@@ -2,6 +2,7 @@
 #define STORAGE_H
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #define STORAGE_SIZE 1024
 #define SECTOR_SIZE 12
