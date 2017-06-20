@@ -2,7 +2,6 @@
 #include "font.h"
 #include "sprite.h"
 #include "storage.h"
-#include <avr/eeprom.h> 
 
 // Arduino configuration
 
@@ -113,7 +112,7 @@ void game_setup()
     pinMode(LATCHJ, OUTPUT);
     pinMode(DATA, INPUT);
 
-    SCLKPORT   &= ~sclkpin;
+    SCLKPORT   |= sclkpin;
     *latport   &= ~latpin;
     *oeport    &= ~oepin;
     *addraport &= ~addrapin;
@@ -132,6 +131,10 @@ void game_setup()
     digitalWrite(LATCHB, HIGH);
     digitalWrite(LATCHJ, LOW);
 }
+
+//////////////////////////
+// Colors
+//////////////////////////
 
 #if defined(COLOR_6BIT) && COLOR_6BIT
 uint8_t game_make_color_channel(uint8_t channel)
@@ -276,55 +279,11 @@ void loop()
     int tock;
     int tick;
     tock = SCLKPORT;
-    tick = tock | sclkpin;
-
-    *oeport |= oepin;
-    *latport   |= latpin;
-    *latport   &= ~latpin;
-
-    if (step & 1)
-        *addraport |= addrapin;
-    else
-        *addraport &= ~addrapin;
-    if (step & 2)
-        *addrbport |= addrbpin;
-    else
-        *addrbport &= ~addrbpin;
-    if (step & 4)
-        *addrcport |= addrcpin;
-    else
-        *addrcport &= ~addrcpin;
-    if (step & 8)
-        *addrdport |= addrdpin;
-    else
-        *addrdport &= ~addrdpin;
-    step = (step + 1) & 0xf;
-    #if defined(COLOR_6BIT) && COLOR_6BIT
-    if (step == 0)
-        color_channel = (color_channel + 1) % 3;
-    #endif
-
-    *oeport &= ~oepin;
+    tick = tock & ~sclkpin;
 
     uint8_t lines[4 * WIDTH];
     game_render_line((uint8_t*)lines, step);
 
-/*
-    // Old output loop
-    for (uint8_t i = 0 ; i < WIDTH ; ++i)
-    {
-        DATAPORT = (lines[3 * WIDTH + i] << 5) | (lines[2 * WIDTH + i] << 2);
-        SCLKPORT = tick; // Clock lo
-        SCLKPORT = tock; // Clock hi
-    }
-
-    for (int i = 0 ; i < WIDTH ; ++i)
-    {
-        DATAPORT = (lines[1 * WIDTH + i] << 5) | (lines[0 * WIDTH + i] << 2);
-        SCLKPORT = tick; // Clock lo
-        SCLKPORT = tock; // Clock hi
-    }
-*/
     uint8_t *line1 = &lines[3 * WIDTH];
     uint8_t *line2 = &lines[2 * WIDTH];
     uint8_t const8 = 8;
@@ -356,7 +315,7 @@ void loop()
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew
 
     line1 = &lines[1 * WIDTH];
     line2 = &lines[0 * WIDTH];
@@ -369,6 +328,29 @@ void loop()
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew 
+
+    *oeport |= oepin;
+
+    if (step & 1)
+        *addraport |= addrapin;
+    else
+        *addraport &= ~addrapin;
+    if (step & 2)
+        *addrbport |= addrbpin;
+    else
+        *addrbport &= ~addrbpin;
+    if (step & 4)
+        *addrcport |= addrcpin;
+    else
+        *addrcport &= ~addrcpin;
+    if (step & 8)
+        *addrdport |= addrdpin;
+    else
+        *addrdport &= ~addrdpin;
+
+    *latport |= latpin;
+    *latport &= ~latpin;
+    *oeport &= ~oepin;
     
     unsigned long cur_time = millis();
 
@@ -395,4 +377,12 @@ void loop()
         update(cur_time - last_update);
         last_update = cur_time;
     }
+
+    step = (step + 1) & 0xf;
+    #if defined(COLOR_6BIT) && COLOR_6BIT
+    if (step == 0)
+        color_channel = (color_channel + 1) % 3;
+    #endif
+
+
 }
