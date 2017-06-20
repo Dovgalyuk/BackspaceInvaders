@@ -4,10 +4,10 @@
 #include "binary.h"
 #include "sprite.h"
 
-#define LEFT BUTTON_NE
-#define RIGHT BUTTON_SE
-#define FIRE BUTTON_SW
-#define PAUSE BUTTON_NW
+#define LEFT BITMASK(BUTTON_NE) | BITMASK(BUTTON_LEFT)
+#define RIGHT BITMASK(BUTTON_SE) | BITMASK(BUTTON_RIGHT)
+#define FIRE BITMASK(BUTTON_SW) | BITMASK(BUTTON_A) | BITMASK(BUTTON_B)
+#define PAUSE BITMASK(BUTTON_NW) | BITMASK(BUTTON_START)
 
 #define SAVEGAME "invaders"
 
@@ -518,7 +518,7 @@ void BackspaceInvaders_update(unsigned long delta) {
     }
 
     // pause
-    if (game_is_button_pressed(PAUSE) && (curTime >= pauseTime))
+    if (game_is_any_button_pressed(PAUSE) && (curTime >= pauseTime))
     {
         pauseTime = curTime + pauseTimeout;
         if (data->phase == PHASE_PAUSED)
@@ -606,15 +606,15 @@ void BackspaceInvaders_update(unsigned long delta) {
             // move cannon
             int cannonW = game_sprite_width(&cannon);
             int step = 2;
-            if (game_is_button_pressed(RIGHT)  && data->cannonX + step + cannonW <= WIDTH)
+            if (game_is_any_button_pressed(RIGHT)  && data->cannonX + step + cannonW <= WIDTH)
             {
                 data->cannonX = data->cannonX + step;
             }
-            else if (game_is_button_pressed(LEFT) && data->cannonX - step >= 0)
+            else if (game_is_any_button_pressed(LEFT) && data->cannonX - step >= 0)
             {
                 data->cannonX = data->cannonX - step;
             }
-            if (game_is_button_pressed(FIRE)
+            if (game_is_any_button_pressed(FIRE)
                     && curTime - data->shootTime >= 500) // shoot
             {
                 data->shootTime = curTime;
@@ -632,7 +632,7 @@ void BackspaceInvaders_update(unsigned long delta) {
     }
 
     if (data->phase == PHASE_LOGO
-            && game_is_button_pressed(FIRE))
+            && game_is_any_button_pressed(FIRE))
     {
         data->started = true;
         data->phase = PHASE_GAME;

@@ -20,6 +20,15 @@
 #define C   A2
 #define D   A3
 
+// Button input
+#define CLOCK 11
+#define LATCHB 12
+#define LATCHJ 13
+#define DATA A4
+#define BUTTONS 16 // total buttons
+
+uint16_t buttons; // buttons currently pressed
+
 // THIS CAN DEGRADE PERFORMANCE 
 #define COLOR_6BIT 0
 
@@ -45,10 +54,10 @@ void prepare(); // prepare execution
 
 static volatile uint8_t
     *latport, *oeport, *addraport, *addrbport, *addrcport, *addrdport,
-    *btnSWport, *btnNWport, *btnSEport, *btnNEport;
+    *clockport, *latchbport, *latchjport, *dataport;
 static uint8_t
     sclkpin, latpin, oepin, addrapin, addrbpin, addrcpin, addrdpin,
-    btnSWpin, btnNWpin, btnSEpin, btnNEpin;
+    clockpin, latchbpin, latchjpin, datapin;
 
 void game_set_ups(int ups)
 {
@@ -60,6 +69,7 @@ void game_set_ups(int ups)
 
 void game_setup()
 {
+    buttons = 0;
     sclkpin   = digitalPinToBitMask(CLK);
     latport   = portOutputRegister(digitalPinToPort(LAT));
     latpin    = digitalPinToBitMask(LAT);
@@ -74,14 +84,14 @@ void game_setup()
     addrdport = portOutputRegister(digitalPinToPort(D));
     addrdpin  = digitalPinToBitMask(D); 
 
-    btnSWport = portInputRegister(digitalPinToPort(BUTTON_SW));
-    btnSWpin  = digitalPinToBitMask(BUTTON_SW); 
-    btnNWport = portInputRegister(digitalPinToPort(BUTTON_NW));
-    btnNWpin  = digitalPinToBitMask(BUTTON_NW); 
-    btnSEport = portInputRegister(digitalPinToPort(BUTTON_SE));
-    btnSEpin  = digitalPinToBitMask(BUTTON_SE); 
-    btnNEport = portInputRegister(digitalPinToPort(BUTTON_NE));
-    btnNEpin  = digitalPinToBitMask(BUTTON_NE); 
+    clockport = portOutputRegister(digitalPinToPort(CLOCK));
+    clockpin  = digitalPinToBitMask(CLOCK); 
+    latchbport = portOutputRegister(digitalPinToPort(LATCHB));
+    latchbpin  = digitalPinToBitMask(LATCHB); 
+    latchjport = portOutputRegister(digitalPinToPort(LATCHJ));
+    latchjpin  = digitalPinToBitMask(LATCHJ); 
+    dataport = portInputRegister(digitalPinToPort(DATA));
+    datapin  = digitalPinToBitMask(DATA);
 
     pinMode(CLK , OUTPUT);
     pinMode(LAT, OUTPUT);
@@ -98,10 +108,10 @@ void game_setup()
     pinMode(IG2, OUTPUT);
     pinMode(IB2, OUTPUT);
 
-    pinMode(BUTTON_SW, INPUT);
-    pinMode(BUTTON_NW, INPUT);
-    pinMode(BUTTON_SE, INPUT);
-    pinMode(BUTTON_NE, INPUT);
+    pinMode(CLOCK, OUTPUT);
+    pinMode(LATCHB, OUTPUT);
+    pinMode(LATCHJ, OUTPUT);
+    pinMode(DATA, INPUT);
 
     SCLKPORT   &= ~sclkpin;
     *latport   &= ~latpin;
@@ -117,6 +127,10 @@ void game_setup()
     digitalWrite(IR2, HIGH);
     digitalWrite(IG2, HIGH);
     digitalWrite(IB2, HIGH);
+    
+    digitalWrite(CLOCK, HIGH);
+    digitalWrite(LATCHB, HIGH);
+    digitalWrite(LATCHJ, LOW);
 }
 
 #if defined(COLOR_6BIT) && COLOR_6BIT
@@ -232,18 +246,12 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 
 bool game_is_button_pressed(uint8_t button)
 {
-    volatile uint8_t *port;
-    uint8_t pin;
-    switch (button)
-    {
-    case BUTTON_SW: pin = btnSWpin; port = btnSWport; break;
-    case BUTTON_NW: pin = btnNWpin; port = btnNWport; break;
-    case BUTTON_SE: pin = btnSEpin; port = btnSEport; break;
-    case BUTTON_NE: pin = btnNEpin; port = btnNEport; break;
-    default: return false;
-    }
+    return (buttons >> button) & 1;
+}
 
-    return ((*port & pin) == 0);
+bool game_is_any_button_pressed(uint16_t bitmask)
+{
+    return (buttons & bitmask);
 }
 
 void game_render_line(uint8_t *buf, int y)
@@ -366,6 +374,24 @@ void loop()
 
     if ((cur_time - last_update >= ticks) && step == 0)
     {
+        // update button state
+        *latchjport |= latchjpin;
+        *latchjport &= ~latchjpin;
+        *latchbport &= ~latchbpin;
+        *latchbport |= latchbpin;
+        for (uint8_t button = 0; button < BUTTONS; ++button)
+        {
+            *clockport &= ~clockpin;
+            *clockport |= clockpin;
+            if (*dataport & datapin)
+            {
+                buttons &= ~(1 << button);
+            }
+            else
+            {
+                buttons |= (1 << button);
+            }
+        }
         update(cur_time - last_update);
         last_update = cur_time;
     }

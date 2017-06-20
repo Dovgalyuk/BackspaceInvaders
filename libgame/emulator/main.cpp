@@ -2,9 +2,19 @@
 /*
  *  CONTROLS:
  *
- *  Q               P
- *   A             L
+ * NW - Q
+ * SW - A
+ * NE - P
+ * SE - L
  *
+ * LEFT - <LEFT>
+ * RIGHT - <RIGHT>
+ * UP - <UP>
+ * DOWN - <DOWN>
+ * A - X
+ * B - Z
+ * SELECT - ,
+ * START - .
  *
  */
 
@@ -24,10 +34,7 @@ sf::VertexArray *screen;
 sf::RenderWindow *window;
 sf::Clock running_clock;
 
-bool btnSWpressed = false;
-bool btnNWpressed = false;
-bool btnSEpressed = false;
-bool btnNEpressed = false;
+uint16_t buttons = 0;
 
 bool paused = false;
 
@@ -94,14 +101,24 @@ void clear_screen()
 
 bool game_is_button_pressed(uint8_t button)
 {
-    switch (button)
+    return (buttons >> button) & 1;
+}
+
+bool game_is_any_button_pressed(uint16_t bitmask)
+{
+    return buttons & bitmask;
+}
+
+void set_pressed(uint8_t button, bool pressed)
+{
+    if (pressed)
     {
-    case BUTTON_SW: return btnSWpressed;
-    case BUTTON_NW: return btnNWpressed;
-    case BUTTON_SE: return btnSEpressed;
-    case BUTTON_NE: return btnNEpressed;
+        buttons |= (1 << button);
     }
-    return false;
+    else
+    {
+        buttons &= ~(1 << button);
+    }
 }
 
 void game_setup()
@@ -191,10 +208,19 @@ int main()
             if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased)
             {
                 bool status = event.type == sf::Event::KeyPressed;
-                if (event.key.code == sf::Keyboard::Q) btnNWpressed = status;
-                if (event.key.code == sf::Keyboard::A) btnSWpressed = status;
-                if (event.key.code == sf::Keyboard::P) btnNEpressed = status;
-                if (event.key.code == sf::Keyboard::L) btnSEpressed = status;
+                if (event.key.code == sf::Keyboard::Q) set_pressed(BUTTON_NW, status);
+                if (event.key.code == sf::Keyboard::A) set_pressed(BUTTON_SW, status);
+                if (event.key.code == sf::Keyboard::P) set_pressed(BUTTON_NE, status);
+                if (event.key.code == sf::Keyboard::L) set_pressed(BUTTON_SE, status);
+
+                if (event.key.code == sf::Keyboard::Left) set_pressed(BUTTON_LEFT, status);
+                if (event.key.code == sf::Keyboard::Right) set_pressed(BUTTON_RIGHT, status);
+                if (event.key.code == sf::Keyboard::Up) set_pressed(BUTTON_UP, status);
+                if (event.key.code == sf::Keyboard::Down) set_pressed(BUTTON_DOWN, status);
+                if (event.key.code == sf::Keyboard::X) set_pressed(BUTTON_A, status);
+                if (event.key.code == sf::Keyboard::Z) set_pressed(BUTTON_B, status);
+                if (event.key.code == sf::Keyboard::Comma) set_pressed(BUTTON_SELECT, status);
+                if (event.key.code == sf::Keyboard::Period) set_pressed(BUTTON_START, status);
                 
                 if (status && event.key.code == sf::Keyboard::Space) paused = !paused;
                 if (status && event.key.code == sf::Keyboard::Escape) window->close();
