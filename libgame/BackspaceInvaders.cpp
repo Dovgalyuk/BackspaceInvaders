@@ -54,6 +54,7 @@ struct BackspaceInvadersData
     int invaderSpeedX[INVADERS];
     int invaderSpeedY[INVADERS];
     int invaderPhase[INVADERS];
+    int invaderExplosion[INVADERS];
     int cannonX;
     int cannonY;
     int shootX[SHOOTS];
@@ -67,6 +68,8 @@ struct BackspaceInvadersData
     unsigned long phaseTime;
     int lives;
     bool started;
+    unsigned long pauseTime;
+    unsigned long lastTime;
 };
 
 static BackspaceInvadersData* data;
@@ -74,6 +77,24 @@ static BackspaceInvadersData* data;
 ////////////////////////////////////////////////////////////
 // Invaders data and functions
 ////////////////////////////////////////////////////////////
+
+const uint8_t explosion1lines[] DATA = {
+    B00100000,
+    B10001000,
+    B00100000,
+    B00000000,
+    B00010100,
+    B01000000
+};
+
+const uint8_t explosion2lines[] DATA = {
+    B00010000,
+    B10000100,
+    B00100000,
+    B00000000,
+    B01000100,
+    B00010000
+};
 
 const uint8_t invader1lines[] DATA = {
     B00011000,
@@ -120,6 +141,14 @@ const uint8_t invader4lines[] DATA = {
     B01111110,
 };
 
+#define EXPLOSION_FRAMES 2
+#define EXPLOSION_WIDTH 6
+#define EXPLOSION_HEIGHT 6
+const game_sprite explosions[EXPLOSION_FRAMES] DATA = {
+    {EXPLOSION_WIDTH, EXPLOSION_HEIGHT, 1, explosion1lines},
+    {EXPLOSION_WIDTH, EXPLOSION_HEIGHT, 1, explosion2lines}
+};
+
 #define INVADER_TYPES 4
 const game_sprite invaders[INVADER_TYPES] DATA = {
     {8, 7, 1, invader1lines}, {11, 8, 2, invader2lines},
@@ -139,6 +168,11 @@ uint8_t invader_height(int type)
 const game_sprite *invader_sprite(int type)
 {
     return &invaders[type - 1];
+}
+
+const game_sprite *explosion_sprite(int frame)
+{
+    return &explosions[frame - 1];
 }
 
 ////////////////////////////////////////////////////////////
@@ -386,7 +420,18 @@ void BackspaceInvaders_render()
     {
         if (data->invaderType[i])
         {
-            game_draw_sprite(invader_sprite(data->invaderType[i]), data->invaderX[i], data->invaderY[i], data->invaderColor[i]);
+            if (data->invaderExplosion[i] == 0)
+            {
+                game_draw_sprite(invader_sprite(data->invaderType[i]), data->invaderX[i], data->invaderY[i], data->invaderColor[i]);
+            }
+            else
+            {
+                int w = invader_width(data->invaderType[i]);
+                int h = invader_height(data->invaderType[i]);
+                int x = ((w - EXPLOSION_WIDTH) >> 1) + data->invaderX[i];
+                int y = ((h - EXPLOSION_HEIGHT) >> 1) + data->invaderY[i];
+                game_draw_sprite(explosion_sprite(data->invaderExplosion[i]), x, y, data->invaderColor[i]);
+            }
         }
     }
 
@@ -444,14 +489,10 @@ bool intersectRect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h
     return xr > xl && yr > yl;
 }
 
-int frame;
-unsigned long pauseTime = 0;
-int pauseTimeout = 500;
-unsigned long lastTime = 0;
 
 void BackspaceInvaders_update(unsigned long delta) {
-    unsigned long curTime = lastTime + delta;
-    lastTime = curTime;
+    unsigned long curTime = data->lastTime + delta;
+    data->lastTime = curTime;
     if (curTime - data->frameTime >= 160)
     {
         data->frameTime = curTime;
@@ -463,6 +504,13 @@ void BackspaceInvaders_update(unsigned long delta) {
             {
                 if (data->invaderType[i])
                 {
+                    if (data->invaderExplosion[i] != 0)
+                    {
+                        data->invaderExplosion[i]++;
+                        if (data->invaderExplosion[i] > EXPLOSION_FRAMES)
+                            data->invaderType[i] = 0;
+                        continue;
+                    }
                     int x = data->invaderX[i];
                     int y = data->invaderY[i];
                     y += data->invaderSpeedY[i];
@@ -508,6 +556,7 @@ void BackspaceInvaders_update(unsigned long delta) {
                     data->invaderPhase[i] = rand() % T_LENGTH;
                     data->invaderX[i] = offs + pgm_read_byte(&trajectory[data->invaderPhase[i]]);
                     data->invaderY[i] = 0;
+                    data->invaderExplosion[i] = 0;
                     const int colors[5] = {BLUE, RED, GREEN, PURPLE, BROWN};
                     data->invaderColor[i] = colors[rand() % 5];
                     data->invaderSpeedY[i] = rand() % 2 + 1;
@@ -518,9 +567,9 @@ void BackspaceInvaders_update(unsigned long delta) {
     }
 
     // pause
-    if (game_is_any_button_pressed(PAUSE) && (curTime >= pauseTime))
+    if (game_is_any_button_pressed(PAUSE) && (curTime >= data->pauseTime))
     {
-        pauseTime = curTime + pauseTimeout;
+        data->pauseTime = curTime + 500;
         if (data->phase == PHASE_PAUSED)
         {
             data->phase = PHASE_GAME;
@@ -544,10 +593,10 @@ void BackspaceInvaders_update(unsigned long delta) {
                 data->shootY[s] -= 3;
                 for (int i = 0 ; i < data->wave ; ++i)
                 {
-                    if (data->invaderType[i] 
+                    if (data->invaderType[i] && !data->invaderExplosion[i]
                             && intersectRect(data->shootX[s], data->shootY[s], 1, SHOOT_H, data->invaderX[i], data->invaderY[i], invader_width(data->invaderType[i]), invader_height(data->invaderType[i])))
                     {
-                        data->invaderType[i] = 0;
+                        data->invaderExplosion[i] = 1;
                         data->shootY[s] = -1;
 
                         data->score += 1;//wave;
@@ -664,6 +713,8 @@ void BackspaceInvaders_prepare()
     data->phase = PHASE_LOGO;
     data->cannonX = (WIDTH - game_sprite_width(&cannon)) / 2;
     data->cannonY = WIDTH - game_sprite_height(&cannon);
+    data->pauseTime = 0;
+    data->lastTime = 0;
     uint8_t fd = storage_open(SAVEGAME, STORAGE_READ);
     if (fd != STORAGE_FAILED)
     {
