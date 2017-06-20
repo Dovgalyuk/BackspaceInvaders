@@ -21,11 +21,11 @@ Display-Arduino
 * CLK - 8
 * OE - 9
 
-Buttons - Arduino
-* LEFT - 11
-* RIGHT - 12
-* FIRE - 13
-* UNASSIGNED - A4
+Buttons are connected via 74165, NES joystick is connected to (CLOCK, LATCHJ, SER)
+* CLOCK - 11
+* LATCHB - 12
+* LATCHJ - 13
+* DATA - A4
 
 The display is logically split into two parts with separate controllers.
 Lower part of display is connected through the upper one with
