@@ -63,7 +63,7 @@ void Tester_update(unsigned long delta)
             data->symb = (data->symb - PER_PAGE + TOTAL) % TOTAL;
         }
     }
-    data->pressed = game_is_any_button_pressed(NEXT) || game_is_any_button_pressed(PREV);
+    data->pressed = game_is_any_button_pressed(NEXT | PREV);
 }
 
 game_instance Tester = {
