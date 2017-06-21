@@ -34,7 +34,7 @@ struct storage_file
 void storage_init();
 void storage_format();
 
-uint8_t storage_open(const char name[FILENAME_LENGTH], uint8_t mode);
+uint8_t storage_open(const char *name, uint8_t mode);
 
 void storage_write_byte(uint8_t sd, uint8_t value);
 void storage_write_word(uint8_t sd, uint16_t value);
@@ -48,5 +48,10 @@ size_t storage_read(uint8_t sd, void* buffer, size_t size); // returns amount of
 
 void storage_delete(uint8_t sd);
 void storage_close(uint8_t sd);
+
+
+size_t storage_read(const char *name, void* buffer, size_t size);
+size_t storage_write(const char *name, void* buffer, size_t size);
+void storage_delete(const char *name);
 
 #endif

@@ -2,7 +2,7 @@
 #define LIBGAME_H
 
 #ifdef EMULATED
-#define DATA
+#define PROGMEM 
 #include <stdlib.h>
 #include <string>
 #include <algorithm>
@@ -12,7 +12,6 @@ using namespace std;
 #else
 #include <Arduino.h>
 #include <avr/pgmspace.h>
-#define DATA PROGMEM
 #endif
 
 #ifdef EMULATED

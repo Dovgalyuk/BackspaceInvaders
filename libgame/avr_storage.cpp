@@ -67,7 +67,7 @@ void storage_format()
     EEPROM_update(2, STORAGE_SIG2);
 }
 
-uint8_t storage_open(const char name[FILENAME_LENGTH], uint8_t mode)
+uint8_t storage_open(const char *name, uint8_t mode)
 {
     uint8_t entry = first_entry;
     uint8_t prev_entry = 0;
@@ -184,6 +184,14 @@ size_t storage_read(uint8_t sd, void* _buffer, size_t size)
     return r;
 }
 
+size_t storage_read(const char *name, void *buffer, size_t size)
+{
+    uint8_t sd = storage_open(name, STORAGE_READ);
+    size_t r = storage_read(sd, buffer, size);
+    storage_close(sd);
+    return r;
+}
+
 uint8_t storage_read_byte(uint8_t sd)
 {
     uint8_t r = 0;
@@ -245,6 +253,14 @@ size_t storage_write(uint8_t sd, void* _buffer, size_t size)
     return w;
 }
 
+size_t storage_write(const char *name, void *buffer, size_t size)
+{
+    uint8_t sd = storage_open(name, STORAGE_WRITE);
+    size_t w = storage_write(sd, buffer, size);
+    storage_close(sd);
+    return w;
+}
+
 void storage_write_byte(uint8_t sd, uint8_t value)
 {
     storage_write(sd, (void*)&value, sizeof(value));
@@ -283,6 +299,12 @@ void storage_delete(uint8_t sd)
         cur_data = EEPROM_read(SECTOR_OFFSET + SECTOR_SIZE * cur_data + SECTOR_SIZE - 1);
     }
     storage_flush_sectors();
+}
+
+void storage_delete(const char *name)
+{
+    uint8_t sd = storage_open(name, STORAGE_READ);
+    storage_delete(sd);
 }
 
 #endif

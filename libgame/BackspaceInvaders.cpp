@@ -78,7 +78,7 @@ static BackspaceInvadersData* data;
 // Invaders data and functions
 ////////////////////////////////////////////////////////////
 
-const uint8_t explosion1lines[] DATA = {
+const uint8_t explosion1lines[] PROGMEM = {
     B00100000,
     B10001000,
     B00100000,
@@ -87,7 +87,7 @@ const uint8_t explosion1lines[] DATA = {
     B01000000
 };
 
-const uint8_t explosion2lines[] DATA = {
+const uint8_t explosion2lines[] PROGMEM = {
     B00010000,
     B10000100,
     B00100000,
@@ -96,7 +96,7 @@ const uint8_t explosion2lines[] DATA = {
     B00010000
 };
 
-const uint8_t invader1lines[] DATA = {
+const uint8_t invader1lines[] PROGMEM = {
     B00011000,
     B00111100,
     B01111110,
@@ -106,7 +106,7 @@ const uint8_t invader1lines[] DATA = {
     B01000010
 };
 
-const uint8_t invader2lines[] DATA = {
+const uint8_t invader2lines[] PROGMEM = {
     B00100000, B10000000,
     B00010001, B00000000,
     B00111111, B10000000,
@@ -117,7 +117,7 @@ const uint8_t invader2lines[] DATA = {
     B00011011, B00000000
 };
 
-const uint8_t invader3lines[] DATA = {
+const uint8_t invader3lines[] PROGMEM = {
     B00010000, B01000000,
     B00001000, B10000000,
     B00000101, B00000000,
@@ -130,7 +130,7 @@ const uint8_t invader3lines[] DATA = {
     B00010000, B01000000
 };
 
-const uint8_t invader4lines[] DATA = {
+const uint8_t invader4lines[] PROGMEM = {
     B11100111,
     B00111100,
     B01111110,
@@ -144,13 +144,13 @@ const uint8_t invader4lines[] DATA = {
 #define EXPLOSION_FRAMES 2
 #define EXPLOSION_WIDTH 6
 #define EXPLOSION_HEIGHT 6
-const game_sprite explosions[EXPLOSION_FRAMES] DATA = {
+const game_sprite explosions[EXPLOSION_FRAMES] PROGMEM = {
     {EXPLOSION_WIDTH, EXPLOSION_HEIGHT, 1, explosion1lines},
     {EXPLOSION_WIDTH, EXPLOSION_HEIGHT, 1, explosion2lines}
 };
 
 #define INVADER_TYPES 4
-const game_sprite invaders[INVADER_TYPES] DATA = {
+const game_sprite invaders[INVADER_TYPES] PROGMEM = {
     {8, 7, 1, invader1lines}, {11, 8, 2, invader2lines},
     {13, 10, 2, invader3lines}, {8, 8, 1, invader4lines}
 };
@@ -179,7 +179,7 @@ const game_sprite *explosion_sprite(int frame)
 // Cannon data
 ////////////////////////////////////////////////////////////
 
-const uint8_t cannonLines[] DATA = {
+const uint8_t cannonLines[] PROGMEM = {
     B00000010, B00000000,
     B00000111, B00000000,
     B00000111, B00000000,
@@ -190,7 +190,7 @@ const uint8_t cannonLines[] DATA = {
     B11111111, B11111000
 };
 
-const game_sprite cannon DATA = {
+const game_sprite cannon PROGMEM = {
     13, 8, 2, cannonLines
 };
 
@@ -201,7 +201,7 @@ const game_sprite cannon DATA = {
 #define GAMEOVER_X 16
 #define GAMEOVER_Y 24
 
-const uint8_t gameOverLines[] DATA = {
+const uint8_t gameOverLines[] PROGMEM = {
     B00111110, B00111000, B11000110, B11111110,
     B01100000, B01101100, B11101110, B11000000,
     B11000000, B11000110, B11111110, B11000000,
@@ -219,7 +219,7 @@ const uint8_t gameOverLines[] DATA = {
     B01111100, B00010000, B11111110, B11001110
 };
 
-const game_sprite gameOver DATA = {
+const game_sprite gameOver PROGMEM = {
     31, 15, 4, gameOverLines
 };
 
@@ -229,13 +229,13 @@ const game_sprite gameOver DATA = {
 
 #define LIFE_X 1
 #define LIFE_Y 2 
-const uint8_t lifeLines[] DATA = {
+const uint8_t lifeLines[] PROGMEM = {
     B01000000,
     B11100000,
     B11100000
 };
 
-const game_sprite life DATA = {
+const game_sprite life PROGMEM = {
     3, 3, 1, lifeLines
 };
 
@@ -245,7 +245,7 @@ const game_sprite life DATA = {
 
 #define HISCORE_LABEL_X 40 
 #define HISCORE_LABEL_Y 1
-const uint8_t hiLines[] DATA = {
+const uint8_t hiLines[] PROGMEM = {
     B10101110,
     B10100100,
     B11100100,
@@ -253,7 +253,7 @@ const uint8_t hiLines[] DATA = {
     B10101110
 };
 
-const game_sprite hiLabel DATA = {
+const game_sprite hiLabel PROGMEM = {
     8, 5, 1, hiLines
 };
 
@@ -261,7 +261,7 @@ const game_sprite hiLabel DATA = {
 // Wave data
 ////////////////////////////////////////////////////////////
 
-const uint8_t waveLines[] DATA = {
+const uint8_t waveLines[] PROGMEM = {
     B10100100, B10101110,
     B10101010, B10101000,
     B11101110, B10101110,
@@ -271,7 +271,7 @@ const uint8_t waveLines[] DATA = {
 
 #define WAVE_X 14
 #define WAVE_Y 1
-const game_sprite wave_sprite DATA = {
+const game_sprite wave_sprite PROGMEM = {
     15, 5, 2, waveLines
 };
 
@@ -279,7 +279,7 @@ const game_sprite wave_sprite DATA = {
 // Logo data
 ////////////////////////////////////////////////////////////
 
-const uint8_t logoLines[] DATA = {
+const uint8_t logoLines[] PROGMEM = {
     B11111011, B11101111, B10100010, B11111011, B11101111, B10111110, B11111000,
     B10001000, B00001000, B00100010, B10000010, B00100000, B00100000, B00000000,
     B11111011, B11101000, B00111100, B11111010, B00101111, B10100000, B11111000,
@@ -294,7 +294,7 @@ const uint8_t logoLines[] DATA = {
     B00000010, B10001000, B10001111, B10111110, B11111010, B00001111, B10000000,
 };
 
-const game_sprite logo DATA = {
+const game_sprite logo PROGMEM = {
     53, 12, 7, logoLines
 };
 
@@ -305,7 +305,7 @@ const game_sprite logo DATA = {
 #define PAUSE_X 14
 #define PAUSE_Y 29
 
-const uint8_t pauseLines[] DATA = {
+const uint8_t pauseLines[] PROGMEM = {
     B01111000,B11100100,B01001111,B01111101,B11100000,
     B01000101,B00010100,B01010000,B01000001,B00010000,
     B01111001,B11110100,B01011111,B01111101,B00010000,
@@ -313,7 +313,7 @@ const uint8_t pauseLines[] DATA = {
     B01000001,B00010011,B10011110,B01111101,B11100000,
 };
 
-const game_sprite pause DATA = {
+const game_sprite pause PROGMEM = {
     36, 5, 5, pauseLines
 };
 
@@ -322,7 +322,7 @@ const game_sprite pause DATA = {
 ////////////////////////////////////////////////////////////
 
 #define DIGIT_H 5
-const uint8_t digitLines[] DATA = {
+const uint8_t digitLines[] PROGMEM = {
     B01100000, // 0
     B10100000,
     B10100000,
@@ -375,7 +375,7 @@ const uint8_t digitLines[] DATA = {
     B11000000
 };
 
-const game_sprite digits[10] DATA = {
+const game_sprite digits[10] PROGMEM = {
     {3, 5, 1, digitLines},
     {3, 5, 1, digitLines + DIGIT_H},
     {3, 5, 1, digitLines + DIGIT_H * 2},
@@ -394,7 +394,7 @@ const game_sprite digits[10] DATA = {
 
 #define T_LENGTH 64
 #define T_WIDTH 49
-const uint8_t trajectory[T_LENGTH] DATA = {24, 26, 28, 30, 33, 35, 37, 39, 40, 42, 43, 45, 46, 46, 47, 47, 48, 47, 47, 46, 46, 45, 43, 42, 40, 39, 37, 35, 33, 30, 28, 26, 23, 21, 19, 17, 14, 12, 10, 8, 7, 5, 4, 2, 1, 1, 0, 0, 0, 0, 0, 1, 1, 2, 4, 5, 7, 8, 10, 12, 14, 17, 19, 21};
+const uint8_t trajectory[T_LENGTH] PROGMEM = {24, 26, 28, 30, 33, 35, 37, 39, 40, 42, 43, 45, 46, 46, 47, 47, 48, 47, 47, 46, 46, 45, 43, 42, 40, 39, 37, 35, 33, 30, 28, 26, 23, 21, 19, 17, 14, 12, 10, 8, 7, 5, 4, 2, 1, 1, 0, 0, 0, 0, 0, 1, 1, 2, 4, 5, 7, 8, 10, 12, 14, 17, 19, 21};
 
 void render_digits(uint16_t num, int len, int x, int y, uint8_t color)
 {

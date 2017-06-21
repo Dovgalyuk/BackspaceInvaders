@@ -288,19 +288,19 @@ void loop()
     uint8_t *line2 = &lines[2 * WIDTH];
     uint8_t const8 = 8;
     uint8_t const4 = 4;
-    uint8_t tmp1, tmp2;
+    uint8_t tmp;
     #define pew asm volatile(                 \
-      "ld  %[tmp1], %a[ptr1]+"       "\n\t"   \
-      "mul %[tmp1], %[c8]"           "\n\t"   \
-      "ld  %[tmp1], %a[ptr2]+"       "\n\t"   \
-      "or  r0, %[tmp1]"              "\n\t"   \
+      "ld  %[tmp], %a[ptr1]+"       "\n\t"    \
+      "mul %[tmp], %[c8]"           "\n\t"    \
+      "ld  %[tmp], %a[ptr2]+"       "\n\t"    \
+      "or  r0, %[tmp]"              "\n\t"    \
       "mul r0, %[c4]"                "\n\t"   \
       "out %[data]    , r0"          "\n\t"   \
       "out %[clk]     , %[tick]"     "\n\t"   \
       "out %[clk]     , %[tock]"     "\n"     \
       :  [ptr1] "+e" (line1),                 \
          [ptr2] "+e" (line2),                 \
-         [tmp1] "=r" (tmp1),                  \
+         [tmp] "=r" (tmp),                    \
          [c8] "+r" (const8),                  \
          [c4] "+r" (const4)                   \
       :  [data] "I" (_SFR_IO_ADDR(DATAPORT)), \

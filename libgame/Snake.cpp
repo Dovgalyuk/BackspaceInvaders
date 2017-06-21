@@ -18,7 +18,7 @@
 #define FIELD_WIDTH 32
 #define FIELD_HEIGHT 32
 
-const uint8_t gameOverLines[] DATA = {
+const uint8_t gameOverLines[] PROGMEM = {
     B00111110, B00111000, B11000110, B11111110,
     B01100000, B01101100, B11101110, B11000000,
     B11000000, B11000110, B11111110, B11000000,
@@ -36,7 +36,7 @@ const uint8_t gameOverLines[] DATA = {
     B01111100, B00010000, B11111110, B11001110
 };
 
-const game_sprite gameOver DATA = {
+const game_sprite gameOver PROGMEM = {
     31, 15, 4, gameOverLines
 };
 
