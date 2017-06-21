@@ -67,7 +67,7 @@ void Tester_update(unsigned long delta)
 }
 
 game_instance Tester = {
-    "Font",//"Шрифты",
+    "Font",
     Tester_prepare,
     Tester_render,
     Tester_update,
