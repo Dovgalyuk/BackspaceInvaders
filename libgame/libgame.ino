@@ -267,6 +267,9 @@ void game_render_line(uint8_t *buf, int y)
 
     // call user render()
     render();
+
+    if (y == WIDTH / 4 - 1) // fix broken led
+        buf[WIDTH * 4 - 1] = 0;
 }
 
 void setup()
