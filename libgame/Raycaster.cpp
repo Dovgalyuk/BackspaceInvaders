@@ -346,10 +346,10 @@ const float sines[] PROGMEM =
 };
 
 #ifdef EMULATED
-#define SINES(x) ((float)sines[x])
+#define SINES(x, r) do { r = (sines[x]); } while (0);
 #define MAP(x) (gmap[x])
 #else
-#define SINES(x) ((float)pgm_read_dword_near(sines + (x)))
+#define SINES(x, res) do { uint32_t w = pgm_read_dword_near(sines + (x)); float *p = (float*)(&w); res = *p; } while (0);
 #define MAP(x) (pgm_read_byte_near(gmap + (x)))
 #endif
 
@@ -362,7 +362,9 @@ float fastsin(float x)
         return -fastsin(x - PI);
     if (x > PI / 2)
         return fastsin(PI - x);
-    return SINES((int)(x * 200));
+    float res;
+    SINES((int)(x * 200), res);
+    return res;
 }
 
 float fastcos(float x)
