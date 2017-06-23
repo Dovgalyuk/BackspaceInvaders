@@ -8,7 +8,7 @@
 #define FONT_HEIGHT 7
 
 // windows-1251 encoded font
-static const unsigned char font_data[] DATA = {
+static const unsigned char font_data[] PROGMEM = {
     // 0x00 (N/A)
     B00000,
     B00000,

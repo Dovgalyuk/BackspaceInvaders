@@ -6,8 +6,8 @@
 #define ROWS 8
 #define TOTAL 256
 
-#define PREV BUTTON_NE
-#define NEXT BUTTON_SE
+#define PREV BITMASK(BUTTON_NE) | BITMASK(BUTTON_LEFT)
+#define NEXT BITMASK(BUTTON_SE) | BITMASK(BUTTON_RIGHT)
 
 struct TesterData
 {
@@ -54,16 +54,16 @@ void Tester_update(unsigned long delta)
 {
     if (!data->pressed)
     {
-        if (game_is_button_pressed(NEXT))
+        if (game_is_any_button_pressed(NEXT))
         {
             data->symb = (data->symb + PER_PAGE) % TOTAL;
         }
-        if (game_is_button_pressed(PREV))
+        if (game_is_any_button_pressed(PREV))
         {
             data->symb = (data->symb - PER_PAGE + TOTAL) % TOTAL;
         }
     }
-    data->pressed = game_is_button_pressed(NEXT) || game_is_button_pressed(PREV);
+    data->pressed = game_is_any_button_pressed(NEXT | PREV);
 }
 
 game_instance Tester = {

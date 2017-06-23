@@ -1,8 +1,13 @@
 #include "libgame.h"
+#include "storage.h"
 
 #define _OUTPUT_INSTANCES
 #include "games.h"
 #undef _OUTPUT_INSTANCES
+
+#define UP BITMASK(BUTTON_NE) | BITMASK(BUTTON_UP)
+#define DOWN BITMASK(BUTTON_SE) | BITMASK(BUTTON_DOWN)
+#define SELECT BITMASK(BUTTON_SW) | BITMASK(BUTTON_START)
 
 #define AVAIL_SPACE 1400
 
@@ -24,6 +29,7 @@ void prepare()
 {
     N_GAMES = sizeof(instances) / sizeof(game_instance);
     game_setup();
+    storage_init();
     game_set_ups(60);
 }
 
@@ -33,18 +39,18 @@ void update(unsigned long delta)
     if (!game_running)
     {
         if (cur_time < btn_timeout) return;
-        if ((game_is_button_pressed(BUTTON_SE)) && sel < (N_GAMES - 1))
+        if ((game_is_any_button_pressed(DOWN)) && sel < (N_GAMES - 1))
         {
             sel++;
             btn_timeout = cur_time + BUTTON_DELAY;
         }
-        if ((game_is_button_pressed(BUTTON_NE)) && sel > 0)
+        if ((game_is_any_button_pressed(UP)) && sel > 0)
         {
             sel--;
             btn_timeout = cur_time + BUTTON_DELAY;
         }
-        if (game_is_button_pressed(BUTTON_SW)) btn_pressed = true;
-        if (!game_is_button_pressed(BUTTON_SW) && btn_pressed)
+        if (game_is_any_button_pressed(SELECT)) btn_pressed = true;
+        if (!game_is_any_button_pressed(SELECT) && btn_pressed)
         {
             // run game
             ptr = instances + sel;

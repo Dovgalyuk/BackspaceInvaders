@@ -1,6 +1,7 @@
 #include "libgame.h"
 #include "font.h"
 #include "sprite.h"
+#include "storage.h"
 
 // Arduino configuration
 
@@ -17,6 +18,15 @@
 #define B   A1
 #define C   A2
 #define D   A3
+
+// Button input
+#define CLOCK 11
+#define LATCHB 12
+#define LATCHJ 13
+#define DATA A4
+#define BUTTONS 16 // total buttons
+
+uint16_t buttons; // buttons currently pressed
 
 // THIS CAN DEGRADE PERFORMANCE 
 #define COLOR_6BIT 0
@@ -41,13 +51,12 @@ void render(); // render sprites
 void update(unsigned long delta); // update logic (ms since last update), enforced by ups / ticks
 void prepare(); // prepare execution
 
-
 static volatile uint8_t
     *latport, *oeport, *addraport, *addrbport, *addrcport, *addrdport,
-    *btnSWport, *btnNWport, *btnSEport, *btnNEport;
+    *clockport, *latchbport, *latchjport, *dataport;
 static uint8_t
     sclkpin, latpin, oepin, addrapin, addrbpin, addrcpin, addrdpin,
-    btnSWpin, btnNWpin, btnSEpin, btnNEpin;
+    clockpin, latchbpin, latchjpin, datapin;
 
 void game_set_ups(int ups)
 {
@@ -59,6 +68,7 @@ void game_set_ups(int ups)
 
 void game_setup()
 {
+    buttons = 0;
     sclkpin   = digitalPinToBitMask(CLK);
     latport   = portOutputRegister(digitalPinToPort(LAT));
     latpin    = digitalPinToBitMask(LAT);
@@ -73,14 +83,14 @@ void game_setup()
     addrdport = portOutputRegister(digitalPinToPort(D));
     addrdpin  = digitalPinToBitMask(D); 
 
-    btnSWport = portInputRegister(digitalPinToPort(BUTTON_SW));
-    btnSWpin  = digitalPinToBitMask(BUTTON_SW); 
-    btnNWport = portInputRegister(digitalPinToPort(BUTTON_NW));
-    btnNWpin  = digitalPinToBitMask(BUTTON_NW); 
-    btnSEport = portInputRegister(digitalPinToPort(BUTTON_SE));
-    btnSEpin  = digitalPinToBitMask(BUTTON_SE); 
-    btnNEport = portInputRegister(digitalPinToPort(BUTTON_NE));
-    btnNEpin  = digitalPinToBitMask(BUTTON_NE); 
+    clockport = portOutputRegister(digitalPinToPort(CLOCK));
+    clockpin  = digitalPinToBitMask(CLOCK); 
+    latchbport = portOutputRegister(digitalPinToPort(LATCHB));
+    latchbpin  = digitalPinToBitMask(LATCHB); 
+    latchjport = portOutputRegister(digitalPinToPort(LATCHJ));
+    latchjpin  = digitalPinToBitMask(LATCHJ); 
+    dataport = portInputRegister(digitalPinToPort(DATA));
+    datapin  = digitalPinToBitMask(DATA);
 
     pinMode(CLK , OUTPUT);
     pinMode(LAT, OUTPUT);
@@ -97,12 +107,12 @@ void game_setup()
     pinMode(IG2, OUTPUT);
     pinMode(IB2, OUTPUT);
 
-    pinMode(BUTTON_SW, INPUT);
-    pinMode(BUTTON_NW, INPUT);
-    pinMode(BUTTON_SE, INPUT);
-    pinMode(BUTTON_NE, INPUT);
+    pinMode(CLOCK, OUTPUT);
+    pinMode(LATCHB, OUTPUT);
+    pinMode(LATCHJ, OUTPUT);
+    pinMode(DATA, INPUT);
 
-    SCLKPORT   &= ~sclkpin;
+    SCLKPORT   |= sclkpin;
     *latport   &= ~latpin;
     *oeport    &= ~oepin;
     *addraport &= ~addrapin;
@@ -116,7 +126,15 @@ void game_setup()
     digitalWrite(IR2, HIGH);
     digitalWrite(IG2, HIGH);
     digitalWrite(IB2, HIGH);
+    
+    digitalWrite(CLOCK, HIGH);
+    digitalWrite(LATCHB, HIGH);
+    digitalWrite(LATCHJ, LOW);
 }
+
+//////////////////////////
+// Colors
+//////////////////////////
 
 #if defined(COLOR_6BIT) && COLOR_6BIT
 uint8_t game_make_color_channel(uint8_t channel)
@@ -231,18 +249,12 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 
 bool game_is_button_pressed(uint8_t button)
 {
-    volatile uint8_t *port;
-    uint8_t pin;
-    switch (button)
-    {
-    case BUTTON_SW: pin = btnSWpin; port = btnSWport; break;
-    case BUTTON_NW: pin = btnNWpin; port = btnNWport; break;
-    case BUTTON_SE: pin = btnSEpin; port = btnSEport; break;
-    case BUTTON_NE: pin = btnNEpin; port = btnNEport; break;
-    default: return false;
-    }
+    return (buttons >> button) & 1;
+}
 
-    return ((*port & pin) == 0);
+bool game_is_any_button_pressed(uint16_t bitmask)
+{
+    return (buttons & bitmask);
 }
 
 void game_render_line(uint8_t *buf, int y)
@@ -255,6 +267,9 @@ void game_render_line(uint8_t *buf, int y)
 
     // call user render()
     render();
+
+    if (y == WIDTH / 4 - 1) // fix broken led
+        buf[WIDTH * 4 - 1] = 0;
 }
 
 void setup()
@@ -267,11 +282,57 @@ void loop()
     int tock;
     int tick;
     tock = SCLKPORT;
-    tick = tock | sclkpin;
+    tick = tock & ~sclkpin;
+
+    uint8_t lines[4 * WIDTH];
+    game_render_line((uint8_t*)lines, step);
+
+    uint8_t *line1 = &lines[3 * WIDTH];
+    uint8_t *line2 = &lines[2 * WIDTH];
+    uint8_t const8 = 8;
+    uint8_t const4 = 4;
+    uint8_t tmp;
+    #define pew asm volatile(                 \
+      "ld  %[tmp], %a[ptr1]+"       "\n\t"    \
+      "mul %[tmp], %[c8]"           "\n\t"    \
+      "ld  %[tmp], %a[ptr2]+"       "\n\t"    \
+      "or  r0, %[tmp]"              "\n\t"    \
+      "mul r0, %[c4]"                "\n\t"   \
+      "out %[data]    , r0"          "\n\t"   \
+      "out %[clk]     , %[tick]"     "\n\t"   \
+      "out %[clk]     , %[tock]"     "\n"     \
+      :  [ptr1] "+e" (line1),                 \
+         [ptr2] "+e" (line2),                 \
+         [tmp] "=r" (tmp),                    \
+         [c8] "+r" (const8),                  \
+         [c4] "+r" (const4)                   \
+      :  [data] "I" (_SFR_IO_ADDR(DATAPORT)), \
+         [clk]  "I" (_SFR_IO_ADDR(SCLKPORT)), \
+         [tick] "r" (tick),                   \
+         [tock] "r" (tock): "r0", "r1");
+
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew
+
+    line1 = &lines[1 * WIDTH];
+    line2 = &lines[0 * WIDTH];
+
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
+    pew pew pew pew pew pew pew pew 
 
     *oeport |= oepin;
-    *latport   |= latpin;
-    *latport   &= ~latpin;
 
     if (step & 1)
         *addraport |= addrapin;
@@ -289,83 +350,42 @@ void loop()
         *addrdport |= addrdpin;
     else
         *addrdport &= ~addrdpin;
+
+    *latport |= latpin;
+    *latport &= ~latpin;
+    *oeport &= ~oepin;
+    
+    unsigned long cur_time = millis();
+
+    if ((cur_time - last_update >= ticks) && step == 0)
+    {
+        // update button state
+        *latchjport |= latchjpin;
+        *latchjport &= ~latchjpin;
+        *latchbport &= ~latchbpin;
+        *latchbport |= latchbpin;
+        for (uint8_t button = 0; button < BUTTONS; ++button)
+        {
+            *clockport &= ~clockpin;
+            *clockport |= clockpin;
+            if (*dataport & datapin)
+            {
+                buttons &= ~(1 << button);
+            }
+            else
+            {
+                buttons |= (1 << button);
+            }
+        }
+        update(cur_time - last_update);
+        last_update = cur_time;
+    }
+
     step = (step + 1) & 0xf;
     #if defined(COLOR_6BIT) && COLOR_6BIT
     if (step == 0)
         color_channel = (color_channel + 1) % 3;
     #endif
 
-    *oeport &= ~oepin;
 
-    uint8_t lines[4 * WIDTH];
-    game_render_line((uint8_t*)lines, step);
-
-/*
-    // Old output loop
-    for (uint8_t i = 0 ; i < WIDTH ; ++i)
-    {
-        DATAPORT = (lines[3 * WIDTH + i] << 5) | (lines[2 * WIDTH + i] << 2);
-        SCLKPORT = tick; // Clock lo
-        SCLKPORT = tock; // Clock hi
-    }
-
-    for (int i = 0 ; i < WIDTH ; ++i)
-    {
-        DATAPORT = (lines[1 * WIDTH + i] << 5) | (lines[0 * WIDTH + i] << 2);
-        SCLKPORT = tick; // Clock lo
-        SCLKPORT = tock; // Clock hi
-    }
-*/
-    uint8_t *line1 = &lines[3 * WIDTH];
-    uint8_t *line2 = &lines[2 * WIDTH];
-    uint8_t const8 = 8;
-    uint8_t const4 = 4;
-    uint8_t tmp1, tmp2;
-    #define pew asm volatile(                 \
-      "ld  %[tmp1], %a[ptr1]+"       "\n\t"   \
-      "mul %[tmp1], %[c8]"           "\n\t"   \
-      "ld  %[tmp1], %a[ptr2]+"       "\n\t"   \
-      "or  r0, %[tmp1]"              "\n\t"   \
-      "mul r0, %[c4]"                "\n\t"   \
-      "out %[data]    , r0"          "\n\t"   \
-      "out %[clk]     , %[tick]"     "\n\t"   \
-      "out %[clk]     , %[tock]"     "\n"     \
-      :  [ptr1] "+e" (line1),                 \
-         [ptr2] "+e" (line2),                 \
-         [tmp1] "=r" (tmp1),                  \
-         [c8] "+r" (const8),                  \
-         [c4] "+r" (const4)                   \
-      :  [data] "I" (_SFR_IO_ADDR(DATAPORT)), \
-         [clk]  "I" (_SFR_IO_ADDR(SCLKPORT)), \
-         [tick] "r" (tick),                   \
-         [tock] "r" (tock): "r0", "r1");
-
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-
-    line1 = &lines[1 * WIDTH];
-    line2 = &lines[0 * WIDTH];
-
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    pew pew pew pew pew pew pew pew 
-    
-    unsigned long cur_time = millis();
-
-    if ((cur_time - last_update >= ticks) && step == 0)
-    {
-        update(cur_time - last_update);
-        last_update = cur_time;
-    }
 }

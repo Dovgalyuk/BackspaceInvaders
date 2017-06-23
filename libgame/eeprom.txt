@@ -1,0 +1,22 @@
+SECTOR = 12 BYTES
+
+FIRST 4 BYTES:
+    0xfc
+    0x8b
+    0x55
+    <addr of first entry>
+
+SECTOR x OCCUPIES BYTES [4 + 12x; 15 + 12x]
+
+SECTOR 0:
+    just a bit map of occupied sectors (0 - free, 1 - occupied)
+    (read(4 + (SECTOR >> 3)) >> (SECTOR & 7)) & 1
+
+ENTRY:
+    unsigned char name[10]
+    uint8_t data
+    uint8_t next
+
+DATA:
+    uint8_t bytes[11]
+    uint8_t next

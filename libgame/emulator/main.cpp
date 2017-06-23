@@ -2,9 +2,19 @@
 /*
  *  CONTROLS:
  *
- *  Q               P
- *   A             L
+ * NW - Q
+ * SW - A
+ * NE - P
+ * SE - L
  *
+ * LEFT - <LEFT>
+ * RIGHT - <RIGHT>
+ * UP - <UP>
+ * DOWN - <DOWN>
+ * A - X
+ * B - Z
+ * SELECT - ,
+ * START - .
  *
  */
 
@@ -16,6 +26,7 @@
 #include <libgame.h>
 #include <sprite.h>
 #include <font.h>
+#include <storage.h>
 
 const int SCALE = 8;
 
@@ -23,10 +34,7 @@ sf::VertexArray *screen;
 sf::RenderWindow *window;
 sf::Clock running_clock;
 
-bool btnSWpressed = false;
-bool btnNWpressed = false;
-bool btnSEpressed = false;
-bool btnNEpressed = false;
+uint16_t buttons = 0;
 
 bool paused = false;
 
@@ -38,6 +46,25 @@ unsigned long millis()
 {
     return running_clock.getElapsedTime().asMilliseconds();
 }
+
+
+void storage_init() {}
+void storage_format() {}
+
+uint8_t storage_open(const char *name, uint8_t mode) { return 0; }
+
+void storage_write_byte(uint8_t sd, uint8_t value) {}
+void storage_write_word(uint8_t sd, uint16_t value) {}
+void storage_write_dword(uint8_t sd, uint32_t value) {}
+size_t storage_write(uint8_t sd, void* buffer, size_t size) { return 0; }
+
+uint8_t storage_read_byte(uint8_t sd) { return 0; }
+uint16_t storage_read_word(uint8_t sd) { return 0; }
+uint32_t storage_read_dword(uint8_t sd) { return 0; }
+size_t storage_read(uint8_t sd, void* buffer, size_t size) { return 0; } 
+
+void storage_delete(uint8_t sd) {}
+void storage_close(uint8_t sd) {}
 
 uint8_t game_sprite_width(const struct game_sprite *s)
 {
@@ -74,14 +101,24 @@ void clear_screen()
 
 bool game_is_button_pressed(uint8_t button)
 {
-    switch (button)
+    return (buttons >> button) & 1;
+}
+
+bool game_is_any_button_pressed(uint16_t bitmask)
+{
+    return buttons & bitmask;
+}
+
+void set_pressed(uint8_t button, bool pressed)
+{
+    if (pressed)
     {
-    case BUTTON_SW: return btnSWpressed;
-    case BUTTON_NW: return btnNWpressed;
-    case BUTTON_SE: return btnSEpressed;
-    case BUTTON_NE: return btnNEpressed;
+        buttons |= (1 << button);
     }
-    return false;
+    else
+    {
+        buttons &= ~(1 << button);
+    }
 }
 
 void game_setup()
@@ -171,10 +208,19 @@ int main()
             if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased)
             {
                 bool status = event.type == sf::Event::KeyPressed;
-                if (event.key.code == sf::Keyboard::Q) btnNWpressed = status;
-                if (event.key.code == sf::Keyboard::A) btnSWpressed = status;
-                if (event.key.code == sf::Keyboard::P) btnNEpressed = status;
-                if (event.key.code == sf::Keyboard::L) btnSEpressed = status;
+                if (event.key.code == sf::Keyboard::Q) set_pressed(BUTTON_NW, status);
+                if (event.key.code == sf::Keyboard::A) set_pressed(BUTTON_SW, status);
+                if (event.key.code == sf::Keyboard::P) set_pressed(BUTTON_NE, status);
+                if (event.key.code == sf::Keyboard::L) set_pressed(BUTTON_SE, status);
+
+                if (event.key.code == sf::Keyboard::Left) set_pressed(BUTTON_LEFT, status);
+                if (event.key.code == sf::Keyboard::Right) set_pressed(BUTTON_RIGHT, status);
+                if (event.key.code == sf::Keyboard::Up) set_pressed(BUTTON_UP, status);
+                if (event.key.code == sf::Keyboard::Down) set_pressed(BUTTON_DOWN, status);
+                if (event.key.code == sf::Keyboard::X) set_pressed(BUTTON_A, status);
+                if (event.key.code == sf::Keyboard::Z) set_pressed(BUTTON_B, status);
+                if (event.key.code == sf::Keyboard::Comma) set_pressed(BUTTON_SELECT, status);
+                if (event.key.code == sf::Keyboard::Period) set_pressed(BUTTON_START, status);
                 
                 if (status && event.key.code == sf::Keyboard::Space) paused = !paused;
                 if (status && event.key.code == sf::Keyboard::Escape) window->close();

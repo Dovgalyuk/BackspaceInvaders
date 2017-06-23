@@ -1,12 +1,15 @@
 #include <stdint.h>
+#include "storage.h"
 #include "libgame.h"
 #include "binary.h"
 #include "sprite.h"
 
-#define LEFT BUTTON_NE
-#define RIGHT BUTTON_SE
-#define FIRE BUTTON_SW
-#define PAUSE BUTTON_NW
+#define LEFT BITMASK(BUTTON_NE) | BITMASK(BUTTON_LEFT)
+#define RIGHT BITMASK(BUTTON_SE) | BITMASK(BUTTON_RIGHT)
+#define FIRE BITMASK(BUTTON_SW) | BITMASK(BUTTON_A) | BITMASK(BUTTON_B)
+#define PAUSE BITMASK(BUTTON_NW) | BITMASK(BUTTON_START)
+
+#define SAVEGAME "invaders"
 
 ////////////////////////////////////////////////////////////
 // Phases
@@ -51,6 +54,7 @@ struct BackspaceInvadersData
     int invaderSpeedX[INVADERS];
     int invaderSpeedY[INVADERS];
     int invaderPhase[INVADERS];
+    int invaderExplosion[INVADERS];
     int cannonX;
     int cannonY;
     int shootX[SHOOTS];
@@ -64,6 +68,8 @@ struct BackspaceInvadersData
     unsigned long phaseTime;
     int lives;
     bool started;
+    unsigned long pauseTime;
+    unsigned long lastTime;
 };
 
 static BackspaceInvadersData* data;
@@ -72,7 +78,25 @@ static BackspaceInvadersData* data;
 // Invaders data and functions
 ////////////////////////////////////////////////////////////
 
-const uint8_t invader1lines[] DATA = {
+const uint8_t explosion1lines[] PROGMEM = {
+    B00100000,
+    B10001000,
+    B00100000,
+    B00000000,
+    B00010100,
+    B01000000
+};
+
+const uint8_t explosion2lines[] PROGMEM = {
+    B00010000,
+    B10000100,
+    B00100000,
+    B00000000,
+    B01000100,
+    B00010000
+};
+
+const uint8_t invader1lines[] PROGMEM = {
     B00011000,
     B00111100,
     B01111110,
@@ -82,7 +106,7 @@ const uint8_t invader1lines[] DATA = {
     B01000010
 };
 
-const uint8_t invader2lines[] DATA = {
+const uint8_t invader2lines[] PROGMEM = {
     B00100000, B10000000,
     B00010001, B00000000,
     B00111111, B10000000,
@@ -93,7 +117,7 @@ const uint8_t invader2lines[] DATA = {
     B00011011, B00000000
 };
 
-const uint8_t invader3lines[] DATA = {
+const uint8_t invader3lines[] PROGMEM = {
     B00010000, B01000000,
     B00001000, B10000000,
     B00000101, B00000000,
@@ -106,7 +130,7 @@ const uint8_t invader3lines[] DATA = {
     B00010000, B01000000
 };
 
-const uint8_t invader4lines[] DATA = {
+const uint8_t invader4lines[] PROGMEM = {
     B11100111,
     B00111100,
     B01111110,
@@ -117,8 +141,16 @@ const uint8_t invader4lines[] DATA = {
     B01111110,
 };
 
+#define EXPLOSION_FRAMES 2
+#define EXPLOSION_WIDTH 6
+#define EXPLOSION_HEIGHT 6
+const game_sprite explosions[EXPLOSION_FRAMES] PROGMEM = {
+    {EXPLOSION_WIDTH, EXPLOSION_HEIGHT, 1, explosion1lines},
+    {EXPLOSION_WIDTH, EXPLOSION_HEIGHT, 1, explosion2lines}
+};
+
 #define INVADER_TYPES 4
-const game_sprite invaders[INVADER_TYPES] DATA = {
+const game_sprite invaders[INVADER_TYPES] PROGMEM = {
     {8, 7, 1, invader1lines}, {11, 8, 2, invader2lines},
     {13, 10, 2, invader3lines}, {8, 8, 1, invader4lines}
 };
@@ -138,11 +170,16 @@ const game_sprite *invader_sprite(int type)
     return &invaders[type - 1];
 }
 
+const game_sprite *explosion_sprite(int frame)
+{
+    return &explosions[frame - 1];
+}
+
 ////////////////////////////////////////////////////////////
 // Cannon data
 ////////////////////////////////////////////////////////////
 
-const uint8_t cannonLines[] DATA = {
+const uint8_t cannonLines[] PROGMEM = {
     B00000010, B00000000,
     B00000111, B00000000,
     B00000111, B00000000,
@@ -153,7 +190,7 @@ const uint8_t cannonLines[] DATA = {
     B11111111, B11111000
 };
 
-const game_sprite cannon DATA = {
+const game_sprite cannon PROGMEM = {
     13, 8, 2, cannonLines
 };
 
@@ -164,7 +201,7 @@ const game_sprite cannon DATA = {
 #define GAMEOVER_X 16
 #define GAMEOVER_Y 24
 
-const uint8_t gameOverLines[] DATA = {
+const uint8_t gameOverLines[] PROGMEM = {
     B00111110, B00111000, B11000110, B11111110,
     B01100000, B01101100, B11101110, B11000000,
     B11000000, B11000110, B11111110, B11000000,
@@ -182,7 +219,7 @@ const uint8_t gameOverLines[] DATA = {
     B01111100, B00010000, B11111110, B11001110
 };
 
-const game_sprite gameOver DATA = {
+const game_sprite gameOver PROGMEM = {
     31, 15, 4, gameOverLines
 };
 
@@ -192,13 +229,13 @@ const game_sprite gameOver DATA = {
 
 #define LIFE_X 1
 #define LIFE_Y 2 
-const uint8_t lifeLines[] DATA = {
+const uint8_t lifeLines[] PROGMEM = {
     B01000000,
     B11100000,
     B11100000
 };
 
-const game_sprite life DATA = {
+const game_sprite life PROGMEM = {
     3, 3, 1, lifeLines
 };
 
@@ -208,7 +245,7 @@ const game_sprite life DATA = {
 
 #define HISCORE_LABEL_X 40 
 #define HISCORE_LABEL_Y 1
-const uint8_t hiLines[] DATA = {
+const uint8_t hiLines[] PROGMEM = {
     B10101110,
     B10100100,
     B11100100,
@@ -216,7 +253,7 @@ const uint8_t hiLines[] DATA = {
     B10101110
 };
 
-const game_sprite hiLabel DATA = {
+const game_sprite hiLabel PROGMEM = {
     8, 5, 1, hiLines
 };
 
@@ -224,7 +261,7 @@ const game_sprite hiLabel DATA = {
 // Wave data
 ////////////////////////////////////////////////////////////
 
-const uint8_t waveLines[] DATA = {
+const uint8_t waveLines[] PROGMEM = {
     B10100100, B10101110,
     B10101010, B10101000,
     B11101110, B10101110,
@@ -234,7 +271,7 @@ const uint8_t waveLines[] DATA = {
 
 #define WAVE_X 14
 #define WAVE_Y 1
-const game_sprite wave_sprite DATA = {
+const game_sprite wave_sprite PROGMEM = {
     15, 5, 2, waveLines
 };
 
@@ -242,7 +279,7 @@ const game_sprite wave_sprite DATA = {
 // Logo data
 ////////////////////////////////////////////////////////////
 
-const uint8_t logoLines[] DATA = {
+const uint8_t logoLines[] PROGMEM = {
     B11111011, B11101111, B10100010, B11111011, B11101111, B10111110, B11111000,
     B10001000, B00001000, B00100010, B10000010, B00100000, B00100000, B00000000,
     B11111011, B11101000, B00111100, B11111010, B00101111, B10100000, B11111000,
@@ -257,7 +294,7 @@ const uint8_t logoLines[] DATA = {
     B00000010, B10001000, B10001111, B10111110, B11111010, B00001111, B10000000,
 };
 
-const game_sprite logo DATA = {
+const game_sprite logo PROGMEM = {
     53, 12, 7, logoLines
 };
 
@@ -268,7 +305,7 @@ const game_sprite logo DATA = {
 #define PAUSE_X 14
 #define PAUSE_Y 29
 
-const uint8_t pauseLines[] DATA = {
+const uint8_t pauseLines[] PROGMEM = {
     B01111000,B11100100,B01001111,B01111101,B11100000,
     B01000101,B00010100,B01010000,B01000001,B00010000,
     B01111001,B11110100,B01011111,B01111101,B00010000,
@@ -276,7 +313,7 @@ const uint8_t pauseLines[] DATA = {
     B01000001,B00010011,B10011110,B01111101,B11100000,
 };
 
-const game_sprite pause DATA = {
+const game_sprite pause PROGMEM = {
     36, 5, 5, pauseLines
 };
 
@@ -285,7 +322,7 @@ const game_sprite pause DATA = {
 ////////////////////////////////////////////////////////////
 
 #define DIGIT_H 5
-const uint8_t digitLines[] DATA = {
+const uint8_t digitLines[] PROGMEM = {
     B01100000, // 0
     B10100000,
     B10100000,
@@ -338,7 +375,7 @@ const uint8_t digitLines[] DATA = {
     B11000000
 };
 
-const game_sprite digits[10] DATA = {
+const game_sprite digits[10] PROGMEM = {
     {3, 5, 1, digitLines},
     {3, 5, 1, digitLines + DIGIT_H},
     {3, 5, 1, digitLines + DIGIT_H * 2},
@@ -357,7 +394,7 @@ const game_sprite digits[10] DATA = {
 
 #define T_LENGTH 64
 #define T_WIDTH 49
-const uint8_t trajectory[T_LENGTH] DATA = {24, 26, 28, 30, 33, 35, 37, 39, 40, 42, 43, 45, 46, 46, 47, 47, 48, 47, 47, 46, 46, 45, 43, 42, 40, 39, 37, 35, 33, 30, 28, 26, 23, 21, 19, 17, 14, 12, 10, 8, 7, 5, 4, 2, 1, 1, 0, 0, 0, 0, 0, 1, 1, 2, 4, 5, 7, 8, 10, 12, 14, 17, 19, 21};
+const uint8_t trajectory[T_LENGTH] PROGMEM = {24, 26, 28, 30, 33, 35, 37, 39, 40, 42, 43, 45, 46, 46, 47, 47, 48, 47, 47, 46, 46, 45, 43, 42, 40, 39, 37, 35, 33, 30, 28, 26, 23, 21, 19, 17, 14, 12, 10, 8, 7, 5, 4, 2, 1, 1, 0, 0, 0, 0, 0, 1, 1, 2, 4, 5, 7, 8, 10, 12, 14, 17, 19, 21};
 
 void render_digits(uint16_t num, int len, int x, int y, uint8_t color)
 {
@@ -383,7 +420,18 @@ void BackspaceInvaders_render()
     {
         if (data->invaderType[i])
         {
-            game_draw_sprite(invader_sprite(data->invaderType[i]), data->invaderX[i], data->invaderY[i], data->invaderColor[i]);
+            if (data->invaderExplosion[i] == 0)
+            {
+                game_draw_sprite(invader_sprite(data->invaderType[i]), data->invaderX[i], data->invaderY[i], data->invaderColor[i]);
+            }
+            else
+            {
+                int w = invader_width(data->invaderType[i]);
+                int h = invader_height(data->invaderType[i]);
+                int x = ((w - EXPLOSION_WIDTH) >> 1) + data->invaderX[i];
+                int y = ((h - EXPLOSION_HEIGHT) >> 1) + data->invaderY[i];
+                game_draw_sprite(explosion_sprite(data->invaderExplosion[i]), x, y, data->invaderColor[i]);
+            }
         }
     }
 
@@ -441,14 +489,10 @@ bool intersectRect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h
     return xr > xl && yr > yl;
 }
 
-int frame;
-unsigned long pauseTime = 0;
-int pauseTimeout = 500;
-unsigned long lastTime = 0;
 
 void BackspaceInvaders_update(unsigned long delta) {
-    unsigned long curTime = lastTime + delta;
-    lastTime = curTime;
+    unsigned long curTime = data->lastTime + delta;
+    data->lastTime = curTime;
     if (curTime - data->frameTime >= 160)
     {
         data->frameTime = curTime;
@@ -460,6 +504,13 @@ void BackspaceInvaders_update(unsigned long delta) {
             {
                 if (data->invaderType[i])
                 {
+                    if (data->invaderExplosion[i] != 0)
+                    {
+                        data->invaderExplosion[i]++;
+                        if (data->invaderExplosion[i] > EXPLOSION_FRAMES)
+                            data->invaderType[i] = 0;
+                        continue;
+                    }
                     int x = data->invaderX[i];
                     int y = data->invaderY[i];
                     y += data->invaderSpeedY[i];
@@ -505,6 +556,7 @@ void BackspaceInvaders_update(unsigned long delta) {
                     data->invaderPhase[i] = rand() % T_LENGTH;
                     data->invaderX[i] = offs + pgm_read_byte(&trajectory[data->invaderPhase[i]]);
                     data->invaderY[i] = 0;
+                    data->invaderExplosion[i] = 0;
                     const int colors[5] = {BLUE, RED, GREEN, PURPLE, BROWN};
                     data->invaderColor[i] = colors[rand() % 5];
                     data->invaderSpeedY[i] = rand() % 2 + 1;
@@ -515,9 +567,9 @@ void BackspaceInvaders_update(unsigned long delta) {
     }
 
     // pause
-    if (game_is_button_pressed(PAUSE) && (curTime >= pauseTime))
+    if (game_is_any_button_pressed(PAUSE) && (curTime >= data->pauseTime))
     {
-        pauseTime = curTime + pauseTimeout;
+        data->pauseTime = curTime + 500;
         if (data->phase == PHASE_PAUSED)
         {
             data->phase = PHASE_GAME;
@@ -541,10 +593,10 @@ void BackspaceInvaders_update(unsigned long delta) {
                 data->shootY[s] -= 3;
                 for (int i = 0 ; i < data->wave ; ++i)
                 {
-                    if (data->invaderType[i] 
+                    if (data->invaderType[i] && !data->invaderExplosion[i]
                             && intersectRect(data->shootX[s], data->shootY[s], 1, SHOOT_H, data->invaderX[i], data->invaderY[i], invader_width(data->invaderType[i]), invader_height(data->invaderType[i])))
                     {
-                        data->invaderType[i] = 0;
+                        data->invaderExplosion[i] = 1;
                         data->shootY[s] = -1;
 
                         data->score += 1;//wave;
@@ -591,6 +643,9 @@ void BackspaceInvaders_update(unsigned long delta) {
                         if (data->score > data->hiscore)
                         {
                             data->hiscore = data->score;
+                            uint8_t fd = storage_open(SAVEGAME, STORAGE_WRITE);
+                            storage_write_word(fd, data->hiscore);
+                            storage_close(fd);
                         }
                     }
                     break;
@@ -600,15 +655,15 @@ void BackspaceInvaders_update(unsigned long delta) {
             // move cannon
             int cannonW = game_sprite_width(&cannon);
             int step = 2;
-            if (game_is_button_pressed(RIGHT)  && data->cannonX + step + cannonW <= WIDTH)
+            if (game_is_any_button_pressed(RIGHT)  && data->cannonX + step + cannonW <= WIDTH)
             {
                 data->cannonX = data->cannonX + step;
             }
-            else if (game_is_button_pressed(LEFT) && data->cannonX - step >= 0)
+            else if (game_is_any_button_pressed(LEFT) && data->cannonX - step >= 0)
             {
                 data->cannonX = data->cannonX - step;
             }
-            if (game_is_button_pressed(FIRE)
+            if (game_is_any_button_pressed(FIRE)
                     && curTime - data->shootTime >= 500) // shoot
             {
                 data->shootTime = curTime;
@@ -626,7 +681,7 @@ void BackspaceInvaders_update(unsigned long delta) {
     }
 
     if (data->phase == PHASE_LOGO
-            && game_is_button_pressed(FIRE))
+            && game_is_any_button_pressed(FIRE))
     {
         data->started = true;
         data->phase = PHASE_GAME;
@@ -658,6 +713,14 @@ void BackspaceInvaders_prepare()
     data->phase = PHASE_LOGO;
     data->cannonX = (WIDTH - game_sprite_width(&cannon)) / 2;
     data->cannonY = WIDTH - game_sprite_height(&cannon);
+    data->pauseTime = 0;
+    data->lastTime = 0;
+    uint8_t fd = storage_open(SAVEGAME, STORAGE_READ);
+    if (fd != STORAGE_FAILED)
+    {
+        data->hiscore = storage_read_word(fd);
+        storage_close(fd);
+    }
 }
 
 

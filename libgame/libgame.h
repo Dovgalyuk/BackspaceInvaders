@@ -2,7 +2,7 @@
 #define LIBGAME_H
 
 #ifdef EMULATED
-#define DATA
+#define PROGMEM 
 #include <stdlib.h>
 #include <string>
 #include <algorithm>
@@ -12,7 +12,6 @@ using namespace std;
 #else
 #include <Arduino.h>
 #include <avr/pgmspace.h>
-#define DATA PROGMEM
 #endif
 
 #ifdef EMULATED
@@ -31,19 +30,28 @@ using namespace std;
 #define WIDTH  64
 #define HEIGHT 64
 
+////////////////
 // BUTTONS
+////////////////
 
-#ifdef EMULATED
-#define BUTTON_SW 1
-#define BUTTON_NW 2
+
+// Physical buttons
+#define BUTTON_SW 6
+#define BUTTON_NW 5
 #define BUTTON_SE 3
 #define BUTTON_NE 4
-#else
-#define BUTTON_SW 11
-#define BUTTON_NW A4
-#define BUTTON_SE 12
-#define BUTTON_NE 13
-#endif
+
+// Joystick buttons
+#define BUTTON_UP 11
+#define BUTTON_LEFT 13
+#define BUTTON_DOWN 12
+#define BUTTON_RIGHT 14
+#define BUTTON_SELECT 9
+#define BUTTON_START 10
+#define BUTTON_A 7
+#define BUTTON_B 8
+
+#define BITMASK(x) (1 << (x))
 
 // COLORS
 // 
@@ -78,6 +86,7 @@ void game_draw_text(const uint8_t *s, int x, int y, uint8_t color); // text is d
 void game_draw_char(uint8_t c, int x, int y, uint8_t color); // char is drawn with default 5x7 font
 
 bool game_is_button_pressed(uint8_t button);
+bool game_is_any_button_pressed(uint16_t bitmask);
 
 void game_set_ups(int ups);
 void game_setup();

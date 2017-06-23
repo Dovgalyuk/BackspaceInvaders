@@ -1,10 +1,16 @@
 #include "libgame.h"
 #include "sprite.h"
+#include "binary.h"
 
 #define MAXLEN 64
 
-#define LEFT BUTTON_NE
-#define RIGHT BUTTON_SE
+#define ROTLEFT BUTTON_SE
+#define ROTRIGHT BUTTON_SW
+
+#define LEFT BUTTON_LEFT
+#define RIGHT BUTTON_RIGHT
+#define UP BUTTON_UP
+#define DOWN BUTTON_DOWN
 
 #define GAMEOVER_X 16
 #define GAMEOVER_Y 24
@@ -12,7 +18,7 @@
 #define FIELD_WIDTH 32
 #define FIELD_HEIGHT 32
 
-const uint8_t gameOverLines[] DATA = {
+const uint8_t gameOverLines[] PROGMEM = {
     B00111110, B00111000, B11000110, B11111110,
     B01100000, B01101100, B11101110, B11000000,
     B11000000, B11000110, B11111110, B11000000,
@@ -30,7 +36,7 @@ const uint8_t gameOverLines[] DATA = {
     B01111100, B00010000, B11111110, B11001110
 };
 
-const game_sprite gameOver DATA = {
+const game_sprite gameOver PROGMEM = {
     31, 15, 4, gameOverLines
 };
 
@@ -49,8 +55,8 @@ struct SnakeData
     uint8_t velY;
     uint8_t foodX;
     uint8_t foodY;
-    bool leftPressed;
-    bool rightPressed;
+    bool rotLeftPressed;
+    bool rotRightPressed;
     bool half;
     uint8_t snakeBegin;
     uint8_t snakeEnd;
@@ -80,7 +86,7 @@ void generateFood()
 
 void Snake_prepare()
 {
-    game_set_ups(60);
+    game_set_ups(40);
     data->phase = PHASE_GAME;
     data->snakeX[0] = 17;
     data->snakeY[0] = 16;
@@ -92,8 +98,8 @@ void Snake_prepare()
     data->snakeEnd = 3;
     data->velX = 1;
     data->velY = 0;
-    data->leftPressed = false;
-    data->rightPressed = false;
+    data->rotLeftPressed = false;
+    data->rotRightPressed = false;
     data->half = false;
     generateFood();
 }
@@ -173,34 +179,49 @@ void Snake_update(unsigned long delta)
                 break;
             }
         }
-    }
-    if (data->phase == PHASE_GAME)
-    {
-        if (game_is_button_pressed(LEFT) && !data->leftPressed)
+
+        if (game_is_button_pressed(ROTLEFT) && !data->rotLeftPressed)
         {
             int newVelX = -data->velY;
             int newVelY = data->velX;
             data->velX = newVelX;
             data->velY = newVelY;
-        }
+        } else
 
-        if (game_is_button_pressed(RIGHT) && !data->rightPressed)
+        if (game_is_button_pressed(ROTRIGHT) && !data->rotRightPressed)
         {
             int newVelX = data->velY;
             int newVelY = -data->velX;
             data->velX = newVelX;
             data->velY = newVelY;
+        } else
+        if (game_is_button_pressed(LEFT) && data->velY != 0)
+        {
+            data->velX = -1;
+            data->velY = 0;
+        } else
+        if (game_is_button_pressed(RIGHT) && data->velY != 0)
+        {
+            data->velX = 1;
+            data->velY = 0;
+        } else
+        if (game_is_button_pressed(UP) && data->velX != 0)
+        {
+            data->velX = 0;
+            data->velY = -1;
+        } else
+        if (game_is_button_pressed(DOWN) && data->velX != 0)
+        {
+            data->velX = 0;
+            data->velY = 1;
         }
     }
     if (data->phase == PHASE_GAMEOVER)
     {
-        if (game_is_button_pressed(BUTTON_NW) ||
-            game_is_button_pressed(BUTTON_SW) ||
-            game_is_button_pressed(BUTTON_NE) ||
-            game_is_button_pressed(BUTTON_SE)) Snake_prepare(); 
+        if (game_is_any_button_pressed(-1)) Snake_prepare(); 
     }
-    data->leftPressed = game_is_button_pressed(LEFT);
-    data->rightPressed = game_is_button_pressed(RIGHT);
+    data->rotLeftPressed = game_is_button_pressed(ROTLEFT);
+    data->rotRightPressed = game_is_button_pressed(ROTRIGHT);
 }
 
 game_instance Snake = {
