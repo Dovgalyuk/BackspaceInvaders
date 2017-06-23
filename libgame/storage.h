@@ -4,12 +4,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define STORAGE_SIZE 1024
-#define SECTOR_SIZE 12
-#define SECTOR_OFFSET 4
-#define SECTORS 85
-#define FILENAME_LENGTH 10
-
 #define STORAGE_CLOSED 0
 #define STORAGE_READ 1
 #define STORAGE_WRITE 2
@@ -17,19 +11,6 @@
 #define STORAGE_EOF 0xff
 
 #define MAX_OPEN_FILES 4
-
-#define STORAGE_SIG0 0xfc
-#define STORAGE_SIG1 0x8b
-#define STORAGE_SIG2 0x55
-
-struct storage_file
-{
-    uint8_t prev_entry;
-    uint8_t entry;
-    uint8_t cur_sector;
-    uint8_t cur_pos;
-    uint8_t mode;
-};
 
 void storage_init();
 void storage_format();

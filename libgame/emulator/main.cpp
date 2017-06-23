@@ -51,7 +51,7 @@ unsigned long millis()
 void storage_init() {}
 void storage_format() {}
 
-uint8_t storage_open(const char name[FILENAME_LENGTH], uint8_t mode) { return 0; }
+uint8_t storage_open(const char *name, uint8_t mode) { return 0; }
 
 void storage_write_byte(uint8_t sd, uint8_t value) {}
 void storage_write_word(uint8_t sd, uint16_t value) {}

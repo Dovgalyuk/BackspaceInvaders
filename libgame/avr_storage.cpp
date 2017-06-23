@@ -1,5 +1,15 @@
 #ifndef EMULATED
 
+#define STORAGE_SIZE 1024
+#define SECTOR_SIZE 12
+#define SECTOR_OFFSET 4
+#define SECTORS 85
+#define FILENAME_LENGTH 10
+
+#define STORAGE_SIG0 0xfc
+#define STORAGE_SIG1 0x8b
+#define STORAGE_SIG2 0x55
+
 #include "storage.h"
 #include <avr/eeprom.h>
 #include <string.h>
@@ -19,9 +29,18 @@ void EEPROM_update(int addr, uint8_t value)
     eeprom_update_byte((uint8_t*)addr, value);
 }
 
-storage_file open_files[MAX_OPEN_FILES];
-uint8_t occupied_sectors[SECTOR_SIZE];
-uint8_t first_entry;
+struct storage_file
+{
+    uint8_t prev_entry;
+    uint8_t entry;
+    uint8_t cur_sector;
+    uint8_t cur_pos;
+    uint8_t mode;
+};
+
+static storage_file open_files[MAX_OPEN_FILES];
+static uint8_t occupied_sectors[SECTOR_SIZE];
+static uint8_t first_entry;
 
 bool sector_is_free(uint8_t sector)
 {
@@ -239,7 +258,6 @@ size_t storage_write(uint8_t sd, void* _buffer, size_t size)
                     open_files[sd].cur_pos = 0;
                     open_files[sd].cur_sector = sector;
                     occupied_sectors[sector >> 3] |= 1 << (sector & 7);
-                    storage_flush_sectors();
                     break;
                 }
             }
@@ -250,6 +268,7 @@ size_t storage_write(uint8_t sd, void* _buffer, size_t size)
         w++;
         open_files[sd].cur_pos++;
     }
+    storage_flush_sectors();
     return w;
 }
 

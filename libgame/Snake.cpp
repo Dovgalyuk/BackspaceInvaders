@@ -195,25 +195,21 @@ void Snake_update(unsigned long delta)
             data->velX = newVelX;
             data->velY = newVelY;
         } else
-
         if (game_is_button_pressed(LEFT) && data->velY != 0)
         {
             data->velX = -1;
             data->velY = 0;
         } else
-
         if (game_is_button_pressed(RIGHT) && data->velY != 0)
         {
             data->velX = 1;
             data->velY = 0;
         } else
-
         if (game_is_button_pressed(UP) && data->velX != 0)
         {
             data->velX = 0;
             data->velY = -1;
         } else
-
         if (game_is_button_pressed(DOWN) && data->velX != 0)
         {
             data->velX = 0;
