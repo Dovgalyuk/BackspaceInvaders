@@ -1,7 +1,6 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "libgame.h"
 #include "binary.h"
 
 #define FONT_WIDTH 5
