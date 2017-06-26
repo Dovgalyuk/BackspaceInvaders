@@ -1,3 +1,5 @@
+#pragma GCC optimize ("-O3")
+
 #include "libgame.h"
 #include "font.h"
 #include "sprite.h"

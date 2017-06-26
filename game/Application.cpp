@@ -1,3 +1,5 @@
+#pragma GCC optimize ("-O3")
+
 #include "libgame.h"
 #include "storage.h"
 

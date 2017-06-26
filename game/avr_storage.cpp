@@ -1,3 +1,5 @@
+#pragma GCC optimize ("-O3")
+
 #ifndef EMULATED
 
 #define STORAGE_SIZE 1024
