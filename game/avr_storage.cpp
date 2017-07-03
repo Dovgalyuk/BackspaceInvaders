@@ -11,15 +11,7 @@
 
 #define STORAGE_SIG0 'B'
 #define STORAGE_SIG1 's'
-#define STORAGE_SIG2 'I'
-
-#define STORAGE_CLOSED 0
-#define STORAGE_READ 1
-#define STORAGE_WRITE 2
-#define STORAGE_FAILED 0xff
-#define STORAGE_EOF 0xff
-
-#define MAX_OPEN_FILES 1
+#define STORAGE_SIG2 'i'
 
 #include "storage.h"
 #include <avr/eeprom.h>
@@ -98,7 +90,8 @@ static uint8_t storage_allocate_sector()
             {
                 uint8_t new_entry = i * 8 + j;
                 // update sectors table
-                EEPROM_update(i, occupied | (1 << j));
+                EEPROM_update(SECTOR_OFFSET + i, occupied | (1 << j));
+                EEPROM_update(SECTOR_OFFSET + SECTOR_SIZE * new_entry + DATA_SIZE, 0);
                 return new_entry;
             }
         }
@@ -119,7 +112,6 @@ static uint8_t storage_new_file(const char *name)
         }
         EEPROM_update(addr, 0);
         EEPROM_update(SECTOR_OFFSET + SECTOR_SIZE * new_entry + FILENAME_LENGTH, 0);
-        EEPROM_update(SECTOR_OFFSET + SECTOR_SIZE * new_entry + FILENAME_LENGTH + 1, 0);
         // find last directory entry
         uint8_t entry = storage_get_first_entry();
         uint8_t prev = 0;
@@ -172,7 +164,7 @@ static uint8_t storage_find_file(const char *name)
 static void storage_write_file(uint8_t entry, const void *buffer, size_t size)
 {
     uint8_t prev = entry;
-    entry = EEPROM_read(SECTOR_OFFSET + SECTOR_SIZE * entry + FILENAME_LENGTH);
+    entry = EEPROM_read(SECTOR_OFFSET + SECTOR_SIZE * entry + DATA_SIZE);
     while (size)
     {
         if (!entry)

@@ -40,7 +40,7 @@ void Tester_render()
     for (unsigned char c = data->symb; i < PER_PAGE; ++c)
     {
         int x = (i % COLS + 2) * (FONT_WIDTH + 1);
-        int y = (i / ROWS) * (FONT_HEIGHT + 1);
+        int y = (i / COLS) * (FONT_HEIGHT + 1);
         game_draw_char(c, x, y, WHITE);
         i++;
     }
