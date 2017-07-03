@@ -14,8 +14,8 @@ SECTOR 0:
 
 ENTRY:
     unsigned char name[10]
-    uint8_t data
     uint8_t next
+    uint8_t data
 
 DATA:
     uint8_t bytes[11]
