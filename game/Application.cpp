@@ -84,3 +84,18 @@ void render()
         ptr->render();
     }
 }
+
+//////////////////////////
+// Storage
+//////////////////////////
+
+void game_save(const void *buf, uint16_t size)
+{
+    storage_write((const char*)ptr->name, buf, size);
+}
+
+void game_load(void *buf, uint16_t size)
+{
+    storage_read((const char*)ptr->name, buf, size);
+}
+

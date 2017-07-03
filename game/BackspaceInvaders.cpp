@@ -1,7 +1,6 @@
 #pragma GCC optimize ("-O3")
 
 #include <stdint.h>
-#include "storage.h"
 #include "libgame.h"
 #include "binary.h"
 #include "sprite.h"
@@ -10,8 +9,6 @@
 #define RIGHT BITMASK(BUTTON_SE) | BITMASK(BUTTON_RIGHT)
 #define FIRE BITMASK(BUTTON_SW) | BITMASK(BUTTON_A) | BITMASK(BUTTON_B)
 #define PAUSE BITMASK(BUTTON_NW) | BITMASK(BUTTON_START)
-
-#define SAVEGAME "invaders"
 
 ////////////////////////////////////////////////////////////
 // Phases
@@ -645,9 +642,7 @@ void BackspaceInvaders_update(unsigned long delta) {
                         if (data->score > data->hiscore)
                         {
                             data->hiscore = data->score;
-                            uint8_t fd = storage_open(SAVEGAME, STORAGE_WRITE);
-                            storage_write_word(fd, data->hiscore);
-                            storage_close(fd);
+                            game_save(&data->hiscore, sizeof(data->hiscore));
                         }
                     }
                     break;
@@ -717,12 +712,7 @@ void BackspaceInvaders_prepare()
     data->cannonY = WIDTH - game_sprite_height(&cannon);
     data->pauseTime = 0;
     data->lastTime = 0;
-    uint8_t fd = storage_open(SAVEGAME, STORAGE_READ);
-    if (fd != STORAGE_FAILED)
-    {
-        data->hiscore = storage_read_word(fd);
-        storage_close(fd);
-    }
+    game_load(&data->hiscore, sizeof(data->hiscore));
 }
 
 
@@ -731,7 +721,6 @@ game_instance BackspaceInvaders = {
     BackspaceInvaders_prepare,
     BackspaceInvaders_render,
     BackspaceInvaders_update,
-    2,
     sizeof(BackspaceInvadersData),
     (void**)(&data)
 };

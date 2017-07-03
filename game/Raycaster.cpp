@@ -571,7 +571,6 @@ game_instance Raycaster = {
     Raycaster_prepare,
     Raycaster_render,
     Raycaster_update,
-    2,
     sizeof(RaycasterData),
     (void**)(&data)
 };

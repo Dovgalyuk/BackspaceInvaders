@@ -72,11 +72,10 @@ typedef void(*game_function_update)(unsigned long);
 
 struct game_instance
 {
-    unsigned char name[11];
+    unsigned char name[10];
     game_function_prepare prepare;
     game_function_render render;
     game_function_update update;
-    uint16_t eeprom_size;
     uint16_t data_size;
     void** data;
 };
@@ -90,5 +89,8 @@ bool game_is_any_button_pressed(uint16_t bitmask);
 
 void game_set_ups(int ups);
 void game_setup();
+
+void game_save(const void *buf, uint16_t size);
+void game_load(void *buf, uint16_t size);
 
 #endif 

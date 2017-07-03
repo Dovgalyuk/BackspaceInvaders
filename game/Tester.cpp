@@ -73,7 +73,6 @@ game_instance Tester = {
     Tester_prepare,
     Tester_render,
     Tester_update,
-    2,
     sizeof(TesterData),
     (void**)(&data)
 };

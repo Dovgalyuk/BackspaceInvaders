@@ -231,7 +231,6 @@ game_instance Snake = {
     Snake_prepare,
     Snake_render,
     Snake_update,
-    2,
     sizeof(SnakeData),
     (void**)(&data)
 };
