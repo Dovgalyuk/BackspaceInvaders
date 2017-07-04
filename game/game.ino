@@ -28,7 +28,7 @@
 #define DATA A4
 #define BUTTONS 16 // total buttons
 
-uint16_t buttons; // buttons currently pressed
+static uint16_t buttons; // buttons currently pressed
 
 // THIS CAN DEGRADE PERFORMANCE 
 #define COLOR_6BIT 0
@@ -366,7 +366,7 @@ void loop()
         *latchjport &= ~latchjpin;
         *latchbport &= ~latchbpin;
         *latchbport |= latchbpin;
-        for (uint8_t button = 0; button < BUTTONS; ++button)
+        for (uint8_t button = 0 ; button < BUTTONS ; ++button)
         {
             *clockport &= ~clockpin;
             *clockport |= clockpin;

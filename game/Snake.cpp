@@ -20,7 +20,7 @@
 #define FIELD_WIDTH 32
 #define FIELD_HEIGHT 32
 
-const uint8_t gameOverLines[] PROGMEM = {
+static const uint8_t gameOverLines[] PROGMEM = {
     B00111110, B00111000, B11000110, B11111110,
     B01100000, B01101100, B11101110, B11000000,
     B11000000, B11000110, B11111110, B11000000,
@@ -38,7 +38,7 @@ const uint8_t gameOverLines[] PROGMEM = {
     B01111100, B00010000, B11111110, B11001110
 };
 
-const game_sprite gameOver PROGMEM = {
+static const game_sprite gameOver PROGMEM = {
     31, 15, 4, gameOverLines
 };
 
@@ -53,8 +53,8 @@ struct SnakeData
     uint8_t phase;
     uint8_t snakeX[MAXLEN + 1];
     uint8_t snakeY[MAXLEN + 1];
-    uint8_t velX;
-    uint8_t velY;
+    int8_t velX;
+    int8_t velY;
     uint8_t foodX;
     uint8_t foodY;
     bool rotLeftPressed;
@@ -66,7 +66,7 @@ struct SnakeData
 };
 static SnakeData* data;
 
-void generateFood()
+static void generateFood()
 {
     while (1)
     {
@@ -86,7 +86,7 @@ void generateFood()
     }
 }
 
-void Snake_prepare()
+static void Snake_prepare()
 {
     game_set_ups(40);
     data->phase = PHASE_GAME;
@@ -106,14 +106,14 @@ void Snake_prepare()
     generateFood();
 }
 
-int velsign(int x)
+static int velsign(int x)
 {
     if (x == 0) return 0;
     if (x == 1) return 1;
     return -1;
 }
 
-void Snake_render()
+static void Snake_render()
 {
     game_draw_pixel(data->foodX * 2, data->foodY * 2, RED);
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2, RED);
@@ -121,12 +121,12 @@ void Snake_render()
     game_draw_pixel(data->foodX * 2 + 1, data->foodY * 2 + 1, RED);
     for (int i = data->snakeBegin; i != data->snakeEnd; i = (i + 1) % MAXLEN)
     {
-        int x = data->snakeX[i] * 2 + WIDTH;
-        int y = data->snakeY[i] * 2 + HEIGHT;
+        int x = data->snakeX[i] * 2;
+        int y = data->snakeY[i] * 2;
         if (data->half && (i + 1) % MAXLEN == data->snakeEnd)
         {
-            x += velsign((data->snakeX[i - 1] - data->snakeX[i] + WIDTH) % FIELD_WIDTH);
-            y += velsign((data->snakeY[i - 1] - data->snakeY[i] + HEIGHT) % FIELD_HEIGHT);
+            x += velsign((data->snakeX[(i - 1 + MAXLEN) % MAXLEN] - data->snakeX[i] + FIELD_WIDTH) % FIELD_WIDTH);
+            y += velsign((data->snakeY[(i - 1 + MAXLEN) % MAXLEN] - data->snakeY[i] + FIELD_HEIGHT) % FIELD_HEIGHT);
             game_draw_pixel(x % WIDTH, y % HEIGHT, GREEN);
             game_draw_pixel((x + 1) % WIDTH, y % HEIGHT, GREEN);
             game_draw_pixel(x % WIDTH, (y + 1) % HEIGHT, GREEN);
@@ -154,7 +154,7 @@ void Snake_render()
     }
 }
 
-void Snake_update(unsigned long delta)
+static void Snake_update(unsigned long delta)
 {
     if (data->phase == PHASE_GAME) data->half = !data->half; else data->half = false;
     if (data->phase == PHASE_GAME && !data->half)
@@ -188,31 +188,30 @@ void Snake_update(unsigned long delta)
             int newVelY = data->velX;
             data->velX = newVelX;
             data->velY = newVelY;
-        } else
-
-        if (game_is_button_pressed(ROTRIGHT) && !data->rotRightPressed)
+        }
+        else if (game_is_button_pressed(ROTRIGHT) && !data->rotRightPressed)
         {
             int newVelX = data->velY;
             int newVelY = -data->velX;
             data->velX = newVelX;
             data->velY = newVelY;
-        } else
-        if (game_is_button_pressed(LEFT) && data->velY != 0)
+        }
+        else if (game_is_button_pressed(LEFT) && data->velY != 0)
         {
             data->velX = -1;
             data->velY = 0;
-        } else
-        if (game_is_button_pressed(RIGHT) && data->velY != 0)
+        }
+        else if (game_is_button_pressed(RIGHT) && data->velY != 0)
         {
             data->velX = 1;
             data->velY = 0;
-        } else
-        if (game_is_button_pressed(UP) && data->velX != 0)
+        }
+        else if (game_is_button_pressed(UP) && data->velX != 0)
         {
             data->velX = 0;
             data->velY = -1;
-        } else
-        if (game_is_button_pressed(DOWN) && data->velX != 0)
+        }
+        else if (game_is_button_pressed(DOWN) && data->velX != 0)
         {
             data->velX = 0;
             data->velY = 1;
@@ -220,7 +219,10 @@ void Snake_update(unsigned long delta)
     }
     if (data->phase == PHASE_GAMEOVER)
     {
-        if (game_is_any_button_pressed(-1)) Snake_prepare(); 
+        if (game_is_any_button_pressed(-1))
+        {
+            Snake_prepare(); 
+        }
     }
     data->rotLeftPressed = game_is_button_pressed(ROTLEFT);
     data->rotRightPressed = game_is_button_pressed(ROTRIGHT);
@@ -234,3 +236,4 @@ game_instance Snake = {
     sizeof(SnakeData),
     (void**)(&data)
 };
+
