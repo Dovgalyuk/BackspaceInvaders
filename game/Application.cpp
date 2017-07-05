@@ -11,7 +11,8 @@
 #define DOWN BITMASK(BUTTON_SE) | BITMASK(BUTTON_DOWN)
 #define SELECT BITMASK(BUTTON_SW) | BITMASK(BUTTON_START)
 
-#define AVAIL_SPACE 1400
+// need some space for stack and system variables
+#define AVAIL_SPACE 1024
 
 static uint8_t N_GAMES;
 

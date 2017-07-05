@@ -47,7 +47,7 @@ void Dump_render()
     }
     for (uint8_t l = 0; l < ROWS; ++l)
     {
-        unsigned char first = data->addr + COLS * l;
+        uint16_t first = data->addr + COLS * l;
         game_draw_char(to_hex(first >> 8), 0, l * (FONT_HEIGHT + 1), RED);
         game_draw_char(to_hex((first >> 4) & 0xf), FONT_WIDTH, l * (FONT_HEIGHT + 1), RED);
         game_draw_char(to_hex(first & 0xf), 2 * FONT_WIDTH, l * (FONT_HEIGHT + 1), RED);

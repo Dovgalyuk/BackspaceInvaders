@@ -16,7 +16,7 @@
 #define SPEED 0.05
 #define ROTSPEED 0.04
 
-const uint8_t gmap[] PROGMEM =
+static const uint8_t gmap[] PROGMEM =
 {
     B11111111,
     B10000001,
@@ -28,7 +28,7 @@ const uint8_t gmap[] PROGMEM =
     B11111111
 };
 
-const float sines[] PROGMEM =
+static const float sines[] PROGMEM =
 {
     0.0,
     0.004999979166692708,
@@ -348,18 +348,17 @@ const float sines[] PROGMEM =
 };
 
 #ifdef EMULATED
-#define SINES(x, r) do { r = (sines[x]); } while (0);
+#define SINES(x, r) do { r = (sines[x]); } while (0)
 #define MAP(x) (gmap[x])
 #else
-#define SINES(x, res) do { uint32_t w = pgm_read_dword_near(sines + (x)); float *p = (float*)(&w); res = *p; } while (0);
+#define SINES(x, res) do { (res) = pgm_read_float_near(sines + (x)); } while (0)
 #define MAP(x) (pgm_read_byte_near(gmap + (x)))
 #endif
 
-float fastsin(float x)
+static inline float fastsin(float x)
 {
-    x -= (int)(x / (2 * PI)) * (2 * PI);
-    if (x < 0)
-        return fastsin(x + 2 * PI);
+    while (x < 0) x += 2 * PI;
+    while (x > 2 * PI) x -= 2 * PI;
     if (x > PI)
         return -fastsin(x - PI);
     if (x > PI / 2)
@@ -369,7 +368,7 @@ float fastsin(float x)
     return res;
 }
 
-float fastcos(float x)
+static inline float fastcos(float x)
 {
     return fastsin(PI / 2 - x);
 }
@@ -385,8 +384,6 @@ struct RaycasterData
 {
     Point playerPos;
     Point playerDir;
-    Point rayPos;
-    Point rayDir;
     Point cameraPlane;
     uint8_t walls[WIDTH];
 };
@@ -394,41 +391,96 @@ struct RaycasterData
 
 static RaycasterData* data;
 
-bool getmap(int x, int y)
+static inline void normalize(Point *p)
 {
+    float len = sqrt(p->x * p->x + p->y * p->y);
+    p->x /= len;
+    p->y /= len;
+}
+
+static inline void rotate(Point *p, float angle)
+{
+    float x = p->x;
+    float c = fastcos(angle);
+    float s = fastsin(angle);
+    p->x = x * c - p->y * s;
+    p->y = x * s + p->y * c;
+}
+
+static inline bool getmap(int x, int y)
+{
+    if (x < 0 || x >= W || y < 0 || y >= H) return 1;
     return (MAP(y) >> x) & 1;
 }
 
-int getHeightForWallDist(float dist)
+static inline int getHeightForWallDist(float dist)
 {
+    if (dist < 0.1) dist = 1;
     int height = fabs(HEIGHT/dist);
-    if (height > HEIGHT) {
-        height = HEIGHT;
+    if (height > HEIGHT - 2) {
+        height = HEIGHT - 2;
     }
     return height;
 }
 
-int playerInWall()
+static inline int playerInWall()
 {
     int x = (int)data->playerPos.x;
     int y = (int)data->playerPos.y;
     return getmap(x, y);
 }
 
-int getWallForRay(Point rayPos, Point rayDir)
+static int getWallForRay(Point rayPos, Point rayDir)
 {
+  /*
     int mapX = (int)rayPos.x;
     int mapY = (int)rayPos.y;
+
+    float len = sqrt((rayDir.x * rayDir.x) + (rayDir.y * rayDir.y));
+    float dx = fabs(rayDir.x / len);
+    float dy = fabs(rayDir.y / len);
+    int sx = dx < 0.0001 ? 0 : rayDir.x > 0 ? 1 : -1;
+    int sy = dy < 0.0001 ? 0 : rayDir.y > 0 ? 1 : -1;
+
+    float x = mapX;
+    float y = mapY;
+
+    while (1)
+    {
+        if (getmap(x, y))
+        {
+            break;
+        }
+        if (dx > dy)
+        {
+            x += sx;
+            y += sy * dy / dx;
+        }
+        else
+        {
+            y += sy;
+            x += sx * dx / dy;
+        }
+    }
+
+    float wallDist = sqrt((x - mapX) * (x - mapX) + (y - mapY) * (y - mapY));
     
+    return getHeightForWallDist(wallDist);*/
+//#if 0
+    int mapX = (int)rayPos.x;
+    int mapY = (int)rayPos.y;
     float sideDistX, sideDistY;
 
-    float deltaDistX = sqrt(1 + (rayDir.y * rayDir.y)/(rayDir.x * rayDir.x));
-    float deltaDistY = sqrt(1 + (rayDir.x * rayDir.x)/(rayDir.y * rayDir.y));
-    
+    //if (fabs(rayDir.x) < 1) rayDir.x = 1;
+    //if (fabs(rayDir.y) < 1) rayDir.y = 1;
+    float len = sqrt((rayDir.x * rayDir.x) + (rayDir.y * rayDir.y));
+    float deltaDistX = len / fabs(rayDir.x);
+    float deltaDistY = len / fabs(rayDir.y);
+
     int stepX, stepY;
     int hit = 0;
     int side;
-    
+
     if (rayDir.x < 0)
     {
         stepX = -1;
@@ -475,23 +527,24 @@ int getWallForRay(Point rayPos, Point rayDir)
     if (side == 0)
     {
         wallDist = fabs((mapX - rayPos.x + (1 - stepX) / 2) / rayDir.x);
-	}
+    }
     else
     {
         wallDist = fabs((mapY - rayPos.y + (1 - stepY) / 2) / rayDir.y);
-	}
+    }
 
     return getHeightForWallDist(wallDist);
+//#endif
 }
 
-void Raycaster_prepare()
+static void Raycaster_prepare()
 {
     data->playerPos.x = 2;
     data->playerPos.y = 2;
     data->playerDir.x = -1;
     data->playerDir.y = 0;
     data->cameraPlane.x = 0;
-    data->cameraPlane.y = 0.66;
+    data->cameraPlane.y = 1;//0.66;
     game_set_ups(30);
     for (int i = 0; i < WIDTH; ++i)
     {
@@ -499,7 +552,7 @@ void Raycaster_prepare()
     }
 }
 
-void Raycaster_render()
+static void Raycaster_render()
 {
     for (int i = 0; i < WIDTH; ++i)
     {
@@ -513,7 +566,7 @@ void Raycaster_render()
     };
 }
 
-void Raycaster_update(unsigned long delta)
+static void Raycaster_update(unsigned long delta)
 {
     if (game_is_button_pressed(BUTTON_UP))
     {
@@ -537,32 +590,24 @@ void Raycaster_update(unsigned long delta)
     }
     if (game_is_button_pressed(BUTTON_LEFT))
     {
-        Point oldPlayerDir, oldCameraPlane;
-        oldPlayerDir.x = data->playerDir.x;
-        data->playerDir.x = data->playerDir.x * fastcos(ROTSPEED) - data->playerDir.y * fastsin(ROTSPEED);
-        data->playerDir.y = oldPlayerDir.x * fastsin(ROTSPEED) + data->playerDir.y * fastcos(ROTSPEED);
-        oldCameraPlane.x = data->cameraPlane.x;
-        data->cameraPlane.x = data->cameraPlane.x * fastcos(ROTSPEED) - data->cameraPlane.y * fastsin(ROTSPEED);
-        data->cameraPlane.y = oldCameraPlane.x * fastsin(ROTSPEED) + data->cameraPlane.y * fastcos(ROTSPEED);
+        rotate(&data->playerDir, ROTSPEED);
+        normalize(&data->playerDir);
+        rotate(&data->cameraPlane, ROTSPEED);
+        normalize(&data->cameraPlane);
     }
     if (game_is_button_pressed(BUTTON_RIGHT))
     {
-        Point oldPlayerDir, oldCameraPlane;
-        oldPlayerDir.x = data->playerDir.x;
-        data->playerDir.x = data->playerDir.x * fastcos(-ROTSPEED) - data->playerDir.y * fastsin(-ROTSPEED);
-        data->playerDir.y = oldPlayerDir.x * fastsin(-ROTSPEED) + data->playerDir.y * fastcos(-ROTSPEED);
-        oldCameraPlane.x = data->cameraPlane.x;
-        data->cameraPlane.x = data->cameraPlane.x * fastcos(-ROTSPEED) - data->cameraPlane.y * fastsin(-ROTSPEED);
-        data->cameraPlane.y = oldCameraPlane.x * fastsin(-ROTSPEED) + data->cameraPlane.y * fastcos(-ROTSPEED);
+        rotate(&data->playerDir, -ROTSPEED);
+        normalize(&data->playerDir);
+        rotate(&data->cameraPlane, -ROTSPEED);
+        normalize(&data->cameraPlane);
     }
     for (int i = 0; i < WIDTH; ++i)
     {
         float cameraXOffset = 2 * i / float(WIDTH) - 1; //maps camera plane from -1 to 1
-        data->rayPos.x = data->playerPos.x;
-        data->rayPos.y = data->playerPos.y;
-        data->rayDir.x = data->playerDir.x + data->cameraPlane.x * cameraXOffset;
-        data->rayDir.y = data->playerDir.y + data->cameraPlane.y * cameraXOffset;
-        data->walls[i] = getWallForRay(data->rayPos, data->rayDir);
+        Point rayDir = { .x = data->playerDir.x + data->cameraPlane.x * cameraXOffset,
+                         .y = data->playerDir.y + data->cameraPlane.y * cameraXOffset };
+        data->walls[i] = getWallForRay(data->playerPos, rayDir);
     }
 }
 
@@ -574,3 +619,4 @@ game_instance Raycaster = {
     sizeof(RaycasterData),
     (void**)(&data)
 };
+
