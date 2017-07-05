@@ -2,8 +2,9 @@
 
 #include "libgame.h"
 #include "font.h"
-#include <math.h>
+//#include <math.h>
 #include "binary.h"
+#include "avrfix.h"
 
 #ifdef EMULATED
 #define PI 3.141592653589793
@@ -11,10 +12,12 @@
 
 #define W 8
 #define H 8
-#define RAY 64
-#define FOW (PI * 0.7)
-#define SPEED 0.05
-#define ROTSPEED 0.04
+//#define RAY 64
+//#define FOW (PI * 0.7)
+#define SPEED ftok(0.05)
+#define ROTSPEED ftok(0.04)
+
+#define FLOAT fix_t
 
 static const uint8_t gmap[] PROGMEM =
 {
@@ -27,7 +30,7 @@ static const uint8_t gmap[] PROGMEM =
     B10000001,
     B11111111
 };
-
+/*
 static const float sines[] PROGMEM =
 {
     0.0,
@@ -346,7 +349,7 @@ static const float sines[] PROGMEM =
     0.999983201344876,
     1.0
 };
-
+*/
 #ifdef EMULATED
 #define SINES(x, r) do { r = (sines[x]); } while (0)
 #define MAP(x) (gmap[x])
@@ -354,7 +357,7 @@ static const float sines[] PROGMEM =
 #define SINES(x, res) do { (res) = pgm_read_float_near(sines + (x)); } while (0)
 #define MAP(x) (pgm_read_byte_near(gmap + (x)))
 #endif
-
+/*
 static inline float fastsin(float x)
 {
     while (x < 0) x += 2 * PI;
@@ -372,12 +375,12 @@ static inline float fastcos(float x)
 {
     return fastsin(PI / 2 - x);
 }
-
+*/
 
 struct Point
 {
-	float x;
-	float y;
+	FLOAT x;
+	FLOAT y;
 };
 
 struct RaycasterData
@@ -393,18 +396,18 @@ static RaycasterData* data;
 
 static inline void normalize(Point *p)
 {
-    float len = sqrt(p->x * p->x + p->y * p->y);
-    p->x /= len;
-    p->y /= len;
+    FLOAT len = sqrtkD(mulkD(p->x, p->x) + mulkD(p->y, p->y));//sqrt(p->x * p->x + p->y * p->y);
+    p->x = divkS(p->x, len);
+    p->y = divkS(p->y, len);
 }
 
-static inline void rotate(Point *p, float angle)
+static inline void rotate(Point *p, FLOAT angle)
 {
-    float x = p->x;
-    float c = fastcos(angle);
-    float s = fastsin(angle);
-    p->x = x * c - p->y * s;
-    p->y = x * s + p->y * c;
+    FLOAT x = p->x;
+    FLOAT c = cosk(angle);//fastcos(angle);
+    FLOAT s = sink(angle);//fastsin(angle);
+    p->x = mulkD(x, c) - mulkD(p->y, s);
+    p->y = mulkD(x, s) + mulkD(p->y, c);
 }
 
 static inline bool getmap(int x, int y)
@@ -413,10 +416,9 @@ static inline bool getmap(int x, int y)
     return (MAP(y) >> x) & 1;
 }
 
-static inline int getHeightForWallDist(float dist)
+static inline int getHeightForWallDist(FLOAT dist)
 {
-    if (dist < 0.1) dist = 1;
-    int height = fabs(HEIGHT/dist);
+    int height = divikS(HEIGHT, dist);
     if (height > HEIGHT - 2) {
         height = HEIGHT - 2;
     }
@@ -425,8 +427,8 @@ static inline int getHeightForWallDist(float dist)
 
 static inline int playerInWall()
 {
-    int x = (int)data->playerPos.x;
-    int y = (int)data->playerPos.y;
+    int x = ktoi(data->playerPos.x);
+    int y = ktoi(data->playerPos.y);
     return getmap(x, y);
 }
 
@@ -467,15 +469,16 @@ static int getWallForRay(Point rayPos, Point rayDir)
     
     return getHeightForWallDist(wallDist);*/
 //#if 0
-    int mapX = (int)rayPos.x;
-    int mapY = (int)rayPos.y;
-    float sideDistX, sideDistY;
+
+    int mapX = ktoi(rayPos.x);
+    int mapY = ktoi(rayPos.y);
+    FLOAT sideDistX, sideDistY;
 
     //if (fabs(rayDir.x) < 1) rayDir.x = 1;
     //if (fabs(rayDir.y) < 1) rayDir.y = 1;
-    float len = sqrt((rayDir.x * rayDir.x) + (rayDir.y * rayDir.y));
-    float deltaDistX = len / fabs(rayDir.x);
-    float deltaDistY = len / fabs(rayDir.y);
+    FLOAT len = sqrtkD(mulkD(rayDir.x, rayDir.x) + mulkD(rayDir.y, rayDir.y));
+    FLOAT deltaDistX = divkS(len, absk(rayDir.x));
+    FLOAT deltaDistY = divkS(len, absk(rayDir.y));
 
     int stepX, stepY;
     int hit = 0;
@@ -484,22 +487,22 @@ static int getWallForRay(Point rayPos, Point rayDir)
     if (rayDir.x < 0)
     {
         stepX = -1;
-        sideDistX = (rayPos.x - mapX) * deltaDistX;
+        sideDistX = mulkD(rayPos.x - itok(mapX), deltaDistX);
     }
     else
     {
         stepX = 1;
-        sideDistX = (mapX + 1.0 - rayPos.x) * deltaDistX;
+        sideDistX = mulkD(itok(mapX + 1) - rayPos.x, deltaDistX);
     }
     if (rayDir.y < 0)
     {
         stepY = -1;
-        sideDistY = (rayPos.y - mapY) * deltaDistY;
+        sideDistY = mulkD(rayPos.y - itok(mapY), deltaDistY);
     }
     else
     {
         stepY = 1;
-        sideDistY = (mapY + 1.0 - rayPos.y) * deltaDistY;
+        sideDistY = mulkD(itok(mapY + 1) - rayPos.y, deltaDistY);
     }
 
     while (!hit)
@@ -523,15 +526,16 @@ static int getWallForRay(Point rayPos, Point rayDir)
         }
     }
 
-    float wallDist;
+    FLOAT wallDist;
     if (side == 0)
     {
-        wallDist = fabs((mapX - rayPos.x + (1 - stepX) / 2) / rayDir.x);
+        wallDist = divkS(itok(mapX + (1 - stepX) / 2) - rayPos.x, rayDir.x);
     }
     else
     {
-        wallDist = fabs((mapY - rayPos.y + (1 - stepY) / 2) / rayDir.y);
+        wallDist = divkS(itok(mapY + (1 - stepY) / 2) - rayPos.y, rayDir.y);
     }
+    wallDist = absk(wallDist);
 
     return getHeightForWallDist(wallDist);
 //#endif
@@ -539,12 +543,12 @@ static int getWallForRay(Point rayPos, Point rayDir)
 
 static void Raycaster_prepare()
 {
-    data->playerPos.x = 2;
-    data->playerPos.y = 2;
-    data->playerDir.x = -1;
+    data->playerPos.x = itok(2);
+    data->playerPos.y = itok(2);
+    data->playerDir.x = itok(-1);
     data->playerDir.y = 0;
     data->cameraPlane.x = 0;
-    data->cameraPlane.y = 1;//0.66;
+    data->cameraPlane.y = itok(1);//0.66;
     game_set_ups(30);
     for (int i = 0; i < WIDTH; ++i)
     {
@@ -570,22 +574,22 @@ static void Raycaster_update(unsigned long delta)
 {
     if (game_is_button_pressed(BUTTON_UP))
     {
-        data->playerPos.x += data->playerDir.x * SPEED;
-        data->playerPos.y += data->playerDir.y * SPEED;
+        data->playerPos.x += mulkD(SPEED, data->playerDir.x);
+        data->playerPos.y += mulkD(SPEED, data->playerDir.y);
         if (playerInWall())
         {
-            data->playerPos.x -= data->playerDir.x * SPEED;
-            data->playerPos.y -= data->playerDir.y * SPEED;
+            data->playerPos.x -= mulkD(SPEED, data->playerDir.x);
+            data->playerPos.y -= mulkD(SPEED, data->playerDir.y);
         }
     }
     if (game_is_button_pressed(BUTTON_DOWN))
     {
-        data->playerPos.x -= data->playerDir.x * SPEED;
-        data->playerPos.y -= data->playerDir.y * SPEED;
+        data->playerPos.x -= mulkD(SPEED, data->playerDir.x);
+        data->playerPos.y -= mulkD(SPEED, data->playerDir.y);
         if (playerInWall())
         {
-            data->playerPos.x += data->playerDir.x * SPEED;
-            data->playerPos.y += data->playerDir.y * SPEED;
+            data->playerPos.x += mulkD(SPEED, data->playerDir.x);
+            data->playerPos.y += mulkD(SPEED, data->playerDir.y);
         }
     }
     if (game_is_button_pressed(BUTTON_LEFT))
@@ -604,9 +608,9 @@ static void Raycaster_update(unsigned long delta)
     }
     for (int i = 0; i < WIDTH; ++i)
     {
-        float cameraXOffset = 2 * i / float(WIDTH) - 1; //maps camera plane from -1 to 1
-        Point rayDir = { .x = data->playerDir.x + data->cameraPlane.x * cameraXOffset,
-                         .y = data->playerDir.y + data->cameraPlane.y * cameraXOffset };
+        FLOAT cameraXOffset = divkS(itok(2 * i), itok(WIDTH)) - itok(1); //maps camera plane from -1 to 1
+        Point rayDir = { .x = data->playerDir.x + mulkD(data->cameraPlane.x, cameraXOffset),
+                         .y = data->playerDir.y + mulkD(data->cameraPlane.y, cameraXOffset) };
         data->walls[i] = getWallForRay(data->playerPos, rayDir);
     }
 }
