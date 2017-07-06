@@ -2,20 +2,12 @@
 
 #include "libgame.h"
 #include "font.h"
-//#include <math.h>
 #include "binary.h"
 #include "avrfix.h"
 
-#ifdef EMULATED
-#define PI 3.141592653589793
-#endif
-
 #define W 8
 #define H 8
-//#define RAY 64
-//#define FOW (PI * 0.7)
 #define SPEED ftok(0.05)
-//#define ROTSPEED ftok(0.04)
 #define ROTCOUNT 128
 
 #define FLOAT fix_t
@@ -79,8 +71,6 @@ static const Point vectors[ROTCOUNT / 4] PROGMEM = {
 struct RaycasterData
 {
     Point playerPos;
-    //Point playerDir;
-    //Point cameraPlane;
     uint8_t dir;
     uint8_t walls[WIDTH];
     //char text1[8];
@@ -89,22 +79,6 @@ struct RaycasterData
 
 
 static RaycasterData* data;
-
-/*static inline void normalize(Point *p)
-{
-    FLOAT len = sqrtkD(mulkD(p->x, p->x) + mulkD(p->y, p->y));//sqrt(p->x * p->x + p->y * p->y);
-    p->x = divkS(p->x, len);
-    p->y = divkS(p->y, len);
-}
-
-static inline void rotate(Point *p, FLOAT angle)
-{
-    FLOAT x = p->x;
-    FLOAT c = cosk(angle);//fastcos(angle);
-    FLOAT s = sink(angle);//fastsin(angle);
-    p->x = mulkD(x, c) - mulkD(p->y, s);
-    p->y = mulkD(x, s) + mulkD(p->y, c);
-}*/
 
 static inline Point get_vector(uint8_t dir)
 {
