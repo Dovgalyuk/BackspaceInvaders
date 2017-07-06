@@ -40,7 +40,7 @@
 #define DIVKS
 #define MULKD
 #define SQRT
-#define SINCOSK
+//#define SINCOSK
 #define CORDICCK
 #define CORDICHK
 

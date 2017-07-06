@@ -15,10 +15,10 @@ using namespace std;
 #endif
 
 #ifdef EMULATED
-#define pgm_read_byte(addr) (*addr)
-#define pgm_read_word(addr) (*addr)
-#define pgm_read_dword(addr) (*addr)
-#define pgm_read_pointer(addr) (*addr)
+#define pgm_read_byte(addr) (*(addr))
+#define pgm_read_word(addr) (*(addr))
+#define pgm_read_dword(addr) (*(addr))
+#define pgm_read_pointer(addr) (*(addr))
 #else
 #if !defined(__INT_MAX__) || (__INT_MAX__ > 0xFFFF)
 #define pgm_read_pointer(addr) ((void *)pgm_read_dword(addr))
