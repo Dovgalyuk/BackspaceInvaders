@@ -5,6 +5,17 @@
 #include "sprite.h"
 #include "storage.h"
 
+
+///////////////////
+// Configuration
+///////////////////
+
+#define COLOR_6BIT 0 /* Whether to use 6-bit color palette */
+
+///////////////////
+// Constants
+///////////////////
+
 // Arduino configuration
 
 #define IR1 2
@@ -29,9 +40,6 @@
 #define BUTTONS 16 // total buttons
 
 static uint16_t buttons; // buttons currently pressed
-
-// THIS CAN DEGRADE PERFORMANCE 
-#define COLOR_6BIT 0
 
 #define DATAPORT PORTD
 #define DATADIR  DDRD
