@@ -2,6 +2,7 @@
 
 #include "libgame.h"
 #include "font.h"
+#include <avr/eeprom.h>
 
 #define COLS 4
 #define ROWS 8
