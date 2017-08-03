@@ -1,5 +1,5 @@
-# BackspaceInvaders
-Game for Arduino and LED display 64x64
+# libgame 
+Game library for Arduino and LED display 64x64
 
 This project uses Adafruit-like display:
 https://learn.adafruit.com/32x16-32x32-rgb-led-matrix
@@ -38,3 +38,6 @@ Therefore this is logically 128x32 display.
 Arduino shifts 128 pixels into display registers at every iteration.
 
 Demonstration of the working prototype: https://www.youtube.com/watch?v=gy7oADJboqM
+
+## Tutorial
+See game/Template.cpp
