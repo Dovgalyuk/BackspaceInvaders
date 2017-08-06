@@ -22,12 +22,14 @@
 #define _AVRFIX_H
 
 
-#ifndef TEST_ON_PC
+#ifndef EMULATED 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 /*#include <avr/signal.h>*/
 #include <avr/pgmspace.h>
 // #include "avrfix_config.h"
+#else
+#include <stdint.h>
 #endif
 
 /* Only two datatypes are used from the ISO/IEC standard:

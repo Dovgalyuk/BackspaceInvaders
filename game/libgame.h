@@ -18,6 +18,9 @@ using namespace std;
 #define pgm_read_byte(addr) (*(addr))
 #define pgm_read_word(addr) (*(addr))
 #define pgm_read_dword(addr) (*(addr))
+#define pgm_read_byte_near(addr) (*((uint8_t*)(addr)))
+#define pgm_read_word_near(addr) (*((uint16_t*)(addr)))
+#define pgm_read_dword_near(addr) (*((uint32_t*)(addr)))
 #define pgm_read_pointer(addr) (*(addr))
 #else
 #if !defined(__INT_MAX__) || (__INT_MAX__ > 0xFFFF)

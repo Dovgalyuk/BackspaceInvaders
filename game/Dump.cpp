@@ -1,5 +1,6 @@
 #pragma GCC optimize ("-O3")
 
+#ifndef EMULATED
 #include "libgame.h"
 #include "font.h"
 #include <avr/eeprom.h>
@@ -79,3 +80,4 @@ game_instance Dump = {
     sizeof(DumpData),
     (void**)(&data)
 };
+#endif

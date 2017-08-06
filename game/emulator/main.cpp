@@ -51,20 +51,8 @@ unsigned long millis()
 void storage_init() {}
 void storage_format() {}
 
-uint8_t storage_open(const char *name, uint8_t mode) { return 0; }
-
-void storage_write_byte(uint8_t sd, uint8_t value) {}
-void storage_write_word(uint8_t sd, uint16_t value) {}
-void storage_write_dword(uint8_t sd, uint32_t value) {}
-size_t storage_write(uint8_t sd, void* buffer, size_t size) { return 0; }
-
-uint8_t storage_read_byte(uint8_t sd) { return 0; }
-uint16_t storage_read_word(uint8_t sd) { return 0; }
-uint32_t storage_read_dword(uint8_t sd) { return 0; }
-size_t storage_read(uint8_t sd, void* buffer, size_t size) { return 0; } 
-
-void storage_delete(uint8_t sd) {}
-void storage_close(uint8_t sd) {}
+void storage_read(const char *name, void *buffer, size_t size){};
+bool storage_write(const char *name, const void *buffer, size_t size){return 0;};
 
 uint8_t game_sprite_width(const struct game_sprite *s)
 {

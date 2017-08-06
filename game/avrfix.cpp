@@ -17,17 +17,18 @@
  * Version 1.0.1                                                *
  * Maximilan Rosenblattl, Andreas Wolf 2007-02-07               *
  ****************************************************************/
-#ifndef TEST_ON_PC
+#ifndef EMULATED 
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 /*#include <avr/signal.h>*/
 #include <avr/pgmspace.h>
+#else
+#include <stdint.h>
+#endif
 
 #include "avrfix.h"
 #include "avrfix_config.h"
-
-#endif
 #if BYTE_ORDER == BIG_ENDIAN
 typedef struct {
    unsigned short ll;

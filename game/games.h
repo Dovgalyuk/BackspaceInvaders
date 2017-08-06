@@ -6,8 +6,9 @@ extern game_instance BackspaceInvaders;
 extern game_instance Snake;
 extern game_instance Tester;
 extern game_instance Raycaster;
+#ifndef EMULATED /* for use only on real hardware */
 extern game_instance Dump;
-
+#endif
 /* Register your game like so:
  * 
  * extern game_instance YOUR_GAME_NAME;
@@ -20,7 +21,9 @@ game_instance instances[] = {
     Snake,
     Raycaster,
     Tester,
+#ifndef EMULATED /* for use only on real hardware */
     Dump,
+#endif
 
     /* Register your game like so:
      * 
