@@ -31,6 +31,8 @@
 #define B   A1
 #define C   A2
 #define D   A3
+// 5-bit address bus support
+//#define E   A5
 
 // Button input
 #define CLOCK 11
@@ -38,6 +40,18 @@
 #define LATCHJ 13
 #define DATA A4
 #define BUTTONS 16 // total buttons
+
+#ifdef E
+#define ADDR_LOW    0x1f
+#define ADDR_HIGH   0xe0
+#define ADDR_SHIFT  1
+#define BUF_LINES   2
+#else
+#define ADDR_LOW    0xf
+#define ADDR_HIGH   0xf0
+#define ADDR_SHIFT  2
+#define BUF_LINES   4
+#endif
 
 static uint16_t buttons; // buttons currently pressed
 
@@ -63,9 +77,15 @@ void prepare(); // prepare execution
 
 static volatile uint8_t
     *latport, *oeport, *addraport, *addrbport, *addrcport, *addrdport,
+#ifdef E
+    *addreport,
+#endif
     *clockport, *latchbport, *latchjport, *dataport;
 static uint8_t
     sclkpin, latpin, oepin, addrapin, addrbpin, addrcpin, addrdpin,
+#ifdef E
+    addrepin,
+#endif
     clockpin, latchbpin, latchjpin, datapin;
 
 void game_set_ups(int ups)
@@ -92,6 +112,10 @@ void game_setup()
     addrcpin  = digitalPinToBitMask(C); 
     addrdport = portOutputRegister(digitalPinToPort(D));
     addrdpin  = digitalPinToBitMask(D); 
+#ifdef E
+    addreport = portOutputRegister(digitalPinToPort(E));
+    addrepin  = digitalPinToBitMask(E); 
+#endif
 
     clockport = portOutputRegister(digitalPinToPort(CLOCK));
     clockpin  = digitalPinToBitMask(CLOCK); 
@@ -109,6 +133,9 @@ void game_setup()
     pinMode(B, OUTPUT);
     pinMode(C, OUTPUT);
     pinMode(D, OUTPUT);
+#ifdef E
+    pinMode(E, OUTPUT);
+#endif
 
     pinMode(IR1, OUTPUT);
     pinMode(IG1, OUTPUT);
@@ -129,6 +156,9 @@ void game_setup()
     *addrbport &= ~addrbpin;
     *addrcport &= ~addrcpin;
     *addrdport &= ~addrdpin;
+#ifdef E
+    *addreport &= ~addrepin;
+#endif
 
     digitalWrite(IR1, HIGH);
     digitalWrite(IG1, HIGH);
@@ -196,7 +226,7 @@ void game_sprite_render_line(const struct game_sprite *s, int x, uint8_t y, int8
         {
             if (spr & mask)
             {
-                game_render_buf[xx + ((ry & 0xf0) << 2)] = color;
+                game_render_buf[xx + ((ry & ADDR_HIGH) << ADDR_SHIFT)] = color;
             }
         }
         mask >>= 1;
@@ -212,8 +242,8 @@ void game_sprite_render_line(const struct game_sprite *s, int x, uint8_t y, int8
 void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color)
 {
     uint8_t height = game_sprite_height(s);
-    uint8_t ry = game_render_y + (y & 0xf0);
-    if (ry < y) ry += 0x10;
+    uint8_t ry = game_render_y + (y & ADDR_HIGH);
+    if (ry < y) ry += ADDR_LOW + 1;
     if (ry >= HEIGHT) return;
     if (ry < (y + height))
     {
@@ -225,15 +255,15 @@ void game_draw_pixel(int x, int y, uint8_t color)
 {
     if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
         return;
-    if (game_render_y == (y & 0xf))
+    if (game_render_y == (y & ADDR_LOW))
     {
-        game_render_buf[x + ((y & 0xf0) << 2)] = game_make_color(color);
+        game_render_buf[x + ((y & ADDR_HIGH) << ADDR_SHIFT)] = game_make_color(color);
     }
 }
 
 void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
-    if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + FONT_HEIGHT)
+    if (game_render_y < (y & ADDR_LOW) || game_render_y >= (y & ADDR_LOW) + FONT_HEIGHT)
         return;
     for (const uint8_t *c = s; *c; ++c)
     {
@@ -244,15 +274,15 @@ void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 
 void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 {
-    if (game_render_y < (y & 0xf) || game_render_y >= (y & 0xf) + FONT_HEIGHT)
+    if (game_render_y < (y & ADDR_LOW) || game_render_y >= (y & ADDR_LOW) + FONT_HEIGHT)
         return;
-    int pos = (int)c * FONT_HEIGHT + (game_render_y - (y & 0xf));
+    int pos = (int)c * FONT_HEIGHT + (game_render_y - (y & ADDR_LOW));
     uint8_t d = pgm_read_byte_near(font_data + pos);
     for (int i = 0; i < FONT_WIDTH; ++i)
     {
         if ((d >> (FONT_WIDTH - 1 - i)) & 1)
         {
-            game_render_buf[x + i + ((y & 0xf0) << 2)] = game_make_color(color);
+            game_render_buf[x + i + ((y & ADDR_HIGH) << ADDR_SHIFT)] = game_make_color(color);
         }
     }
 }
@@ -269,7 +299,7 @@ bool game_is_any_button_pressed(uint16_t bitmask)
 
 void game_render_line(uint8_t *buf, int y)
 {
-    for (int i = 0; i < WIDTH * 4; ++i)
+    for (int i = 0; i < WIDTH * BUF_LINES; ++i)
         buf[i] = 0;
 
     game_render_buf = buf;
@@ -277,9 +307,10 @@ void game_render_line(uint8_t *buf, int y)
 
     // call user render()
     render();
-
+#ifndef E
     if (y == WIDTH / 4 - 1) // fix broken led
         buf[WIDTH * 4 - 1] = 0;
+#endif
 }
 
 void setup()
@@ -294,11 +325,11 @@ void loop()
     tock = SCLKPORT;
     tick = tock & ~sclkpin;
 
-    uint8_t lines[4 * WIDTH];
+    uint8_t lines[BUF_LINES * WIDTH];
     game_render_line((uint8_t*)lines, step);
 
-    uint8_t *line1 = &lines[3 * WIDTH];
-    uint8_t *line2 = &lines[2 * WIDTH];
+    uint8_t *line1 = &lines[(BUF_LINES - 1) * WIDTH];
+    uint8_t *line2 = &lines[(BUF_LINES - 2) * WIDTH];
     uint8_t const8 = 8;
     uint8_t const4 = 4;
     uint8_t tmp;
@@ -329,7 +360,7 @@ void loop()
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew
-
+#ifdef E
     line1 = &lines[1 * WIDTH];
     line2 = &lines[0 * WIDTH];
 
@@ -341,7 +372,7 @@ void loop()
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew 
-
+#endif
     *oeport |= oepin;
 
     if (step & 1)
@@ -360,6 +391,12 @@ void loop()
         *addrdport |= addrdpin;
     else
         *addrdport &= ~addrdpin;
+#ifdef E
+    if (step & 16)
+        *addreport |= addrepin;
+    else
+        *addreport &= ~addrepin;
+#endif
 
     *latport |= latpin;
     *latport &= ~latpin;
@@ -391,7 +428,7 @@ void loop()
         last_update = cur_time;
     }
 
-    step = (step + 1) & 0xf;
+    step = (step + 1) & ADDR_LOW;
     #if defined(COLOR_6BIT) && COLOR_6BIT
     if (step == 0)
         color_channel = (color_channel + 1) % 3;
