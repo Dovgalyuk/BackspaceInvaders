@@ -2,4 +2,5 @@ build-uno
 bin
 *.swp
 *.exe
-libgame/emulator/emulator
+*.o
+game/emulator/emulator
