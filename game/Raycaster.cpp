@@ -209,8 +209,8 @@ static void update_walls()
         Point cameraPlane = get_vector(data->dir + ROTCOUNT / 4);
         //sprintf(data->text1, "%d", playerDir.x);
         //sprintf(data->text2, "%d", playerDir.y);
-        Point rayDir = { .x = playerDir.x + mulkD(cameraPlane.x, cameraXOffset),
-                         .y = playerDir.y + mulkD(cameraPlane.y, cameraXOffset) };
+        Point rayDir = { playerDir.x + mulkD(cameraPlane.x, cameraXOffset),
+                         playerDir.y + mulkD(cameraPlane.y, cameraXOffset) };
         data->walls[i] = getWallForRay(data->playerPos, rayDir);
     }
 }
