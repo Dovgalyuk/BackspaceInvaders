@@ -122,8 +122,8 @@ static void Template_update(unsigned long delta)
     /* Здесь можно работать с кнопками и обновлять переменные */
 }
 
-game_instance Template = {
-    "Template",         /* Имя, отображаемое в меню */
+game_instance BreakOut = {
+    "BreakOut",         /* Имя, отображаемое в меню */
     Template_prepare,
     Template_render,
     Template_update,
