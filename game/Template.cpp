@@ -2,6 +2,7 @@
 
 #include "libgame.h"
 #include "sprite.h"
+#include "binary.h"
 
 /* Встроенные цвета:
  *
