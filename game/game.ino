@@ -360,7 +360,7 @@ void loop()
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew 
     pew pew pew pew pew pew pew pew
-#ifdef E
+#ifndef E
     line1 = &lines[1 * WIDTH];
     line2 = &lines[0 * WIDTH];
 
