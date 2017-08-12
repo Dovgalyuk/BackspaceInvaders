@@ -66,7 +66,7 @@ using namespace std;
 #define RED 48
 #define CYAN (BLUE + GREEN)
 #define PURPLE (RED + BLUE)
-#define BROWN (RED + GREEN)
+#define YELLOW (RED + GREEN)
 #define WHITE 63
 
 typedef void(*game_function_prepare)();

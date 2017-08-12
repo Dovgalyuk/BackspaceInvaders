@@ -556,7 +556,7 @@ void BackspaceInvaders_update(unsigned long delta) {
                     data->invaderX[i] = offs + pgm_read_byte(&trajectory[data->invaderPhase[i]]);
                     data->invaderY[i] = 0;
                     data->invaderExplosion[i] = 0;
-                    const int colors[5] = {BLUE, RED, GREEN, PURPLE, BROWN};
+                    const int colors[5] = {BLUE, RED, GREEN, PURPLE, YELLOW};
                     data->invaderColor[i] = colors[rand() % 5];
                     data->invaderSpeedY[i] = rand() % 2 + 1;
                     data->invaderSpeedX[i] = rand() % 4 + 1;
