@@ -84,6 +84,7 @@ struct game_instance
 };
 
 void game_draw_pixel(int x, int y, uint8_t color);
+void game_draw_vline(int x, int y1, int y2, uint8_t color); // vertical line
 void game_draw_text(const uint8_t *s, int x, int y, uint8_t color); // text is drawn with default 5x7 font
 void game_draw_char(uint8_t c, int x, int y, uint8_t color); // char is drawn with default 5x7 font
 

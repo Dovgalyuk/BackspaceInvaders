@@ -76,6 +76,12 @@ void game_draw_pixel(int x, int y, uint8_t c)
     (*screen)[pos + 3].color = color;
 }
 
+void game_draw_vline(int x, int y1, int y2, uint8_t color)
+{
+    for (int i = y1 ; i <= y2 ; ++i)
+        game_draw_pixel(x, i, color);
+}
+
 void clear_screen()
 {
     for (int x = 0; x < HEIGHT; ++x)

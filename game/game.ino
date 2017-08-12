@@ -261,6 +261,18 @@ void game_draw_pixel(int x, int y, uint8_t color)
     }
 }
 
+void game_draw_vline(int x, int y1, int y2, uint8_t color)
+{
+    if (x < 0 || x >= WIDTH || y2 < 0 || y1 >= HEIGHT)
+        return;
+    for (uint8_t y = 0 ; y < (1 << ADDR_SHIFT) ; ++y)
+    {
+        uint8_t yy = game_render_y + y * (ADDR_LOW + 1);
+        if (yy >= y1 && yy <= y2)
+            game_render_buf[x + y * WIDTH] = game_make_color(color);
+    }
+}
+
 void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
     if (game_render_y < (y & ADDR_LOW) || game_render_y >= (y & ADDR_LOW) + FONT_HEIGHT)
