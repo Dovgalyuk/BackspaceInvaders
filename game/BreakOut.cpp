@@ -2,6 +2,7 @@
 
 #include "libgame.h"
 #include "sprite.h"
+#include "binary.h"
 
 /* Встроенные цвета:
  *
@@ -56,26 +57,40 @@ xxx  xxx  xxx
 
 
  --------------------------------
- 
+ */
 const uint8_t YourSprite_lines[] PROGMEM = {
-    B00010000, B01000000,
-    B00001000, B10000000,
-    B00000101, B00000000,
-    B00111111, B11100000,
-    B01111111, B11110000,
-    B11100111, B00111000,
-    B01111111, B11110000,
-    B00111111, B11100000,
-    B00001010, B10000000,
-    B00010000, B01000000
+    B11111111, B11111111,
+    B11111111, B11111111,
+    B11111111, B11111111
 };
 
 const game_sprite YourSprite PROGMEM = {
     // ШИРИНА, ВЫСОТА, КОЛИЧЕСТВО БАЙТ НА СТРОКУ, ДАННЫЕ
-    13, 10, 2, YourSprite_lines
+    13, 3, 2, YourSprite_lines
+};
+const uint8_t BallData[] PROGMEM = {
+    B01100000, //   xxxx  
+    B11110000, // xxxxxxxx
+    B11110000, //  xxxxxxxx
+    B01100000  //    xxxx
+};
+const uint8_t BrickData[] PROGMEM = {
+    B11111111,
+	B11111111
+};
+const game_sprite Brick PROGMEM = {
+    // ШИРИНА, ВЫСОТА, КОЛИЧЕСТВО БАЙТ НА СТРОКУ, ДАННЫЕ
+    6,2, 2, BrickData
+	};
+
+
+
+const game_sprite Ball PROGMEM = {
+    // ШИРИНА, ВЫСОТА, КОЛИЧЕСТВО БАЙТ НА СТРОКУ, ДАННЫЕ
+     4, 4, 1, BallData
 };
 
-*/
+
 
 /* Функции отрисовки
  *
@@ -93,43 +108,68 @@ const game_sprite YourSprite PROGMEM = {
  *
  * */
 
-struct TemplateData
+struct BreakOutData
 {
+	int BoardX, ballX, ballY,speedy,speedx,BricksX,BricksY;
     /* Объявляйте ваши переменные здесь */
     /* Чтобы потом обращаться к ним, пишите data->ПЕРЕМЕННАЯ */
 };
-static TemplateData* data; /* Эта переменная - указатель на структуру, которая содержит ваши переменные */
+static BreakOutData* data; /* Эта переменная - указатель на структуру, которая содержит ваши переменные */
 
-static void Template_prepare()
+static void BreakOut_prepare()
 {
+    data->ballX = data->ballY = 30;
+    data->speedy = 1;
+	data->speedx = -1;
     /* Здесь код, который будет исполнятся один раз */
     /* Здесь нужно инициализировать переменные */
 }
 
-static void Template_render()
+static void BreakOut_render()
 {
     /* Здесь код, который будет вывзваться для отрисовки кадра */
     /* Он не должен менять состояние игры, для этого есть функция update */
-
+    game_draw_sprite(&YourSprite,data->BoardX,61,CYAN);
+    game_draw_sprite(&Ball,data->ballX,data->ballY,RED);
+	game_draw_sprite(&Brick,data->BricksX,data->BricksY,RED);
     /* Здесь (и только здесь) нужно вызывать функции game_draw_??? */
 }
 
-static void Template_update(unsigned long delta)
+static void BreakOut_update(unsigned long delta)
 {
     /* Здесь код, который будет выполняться в цикле */
     /* Переменная delta содержит количество миллисекунд с последнего вызова */
+    if(game_is_button_pressed(BUTTON_RIGHT) && data->BoardX < 51)
+    {
+      data->BoardX = (data->BoardX + 1);
+      }
+      if(game_is_button_pressed(BUTTON_LEFT) && data->BoardX > 0)
+    {
+      data->BoardX = (data->BoardX - 1);
+      
+      }
 
+	  if((data->ballX==data->BoardX) && (data->ballX == 61)) {
+
+		  data->speedy = -data->speedy;
+
+	  }
+
+      data->ballX += data->speedx;
+      
+      data->ballY += data->speedy;
+      
     /* Здесь можно работать с кнопками и обновлять переменные */
 }
 
+
 game_instance BreakOut = {
     "BreakOut",         /* Имя, отображаемое в меню */
-    Template_prepare,
-    Template_render,
-    Template_update,
-    sizeof(TemplateData),
+    BreakOut_prepare,
+    BreakOut_render,
+    BreakOut_update,
+    sizeof(BreakOutData),
     (void**)(&data)
 };
-
 
 /* Не забудьте зарегистрировать игру в games.h */
