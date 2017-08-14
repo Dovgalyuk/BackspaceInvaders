@@ -80,7 +80,7 @@ const uint8_t BrickData[] PROGMEM = {
 };
 const game_sprite Brick PROGMEM = {
     // ШИРИНА, ВЫСОТА, КОЛИЧЕСТВО БАЙТ НА СТРОКУ, ДАННЫЕ
-    6,2, 2, BrickData
+    8,2, 2, BrickData
 	};
 
 
@@ -110,7 +110,18 @@ const game_sprite Ball PROGMEM = {
 
 struct BreakOutData
 {
-	int BoardX, ballX, ballY,speedy,speedx,BricksX,BricksY;
+	int BoardX, ballX, ballY,speedy,speedx,BricksX[48] {0,8,16,24,32,40,48,56,
+														0,8,16,24,32,40,48,56,
+														0,8,16,24,32,40,48,56,
+														0,8,16,24,32,40,48,56,
+														0,8,16,24,32,40,48,56,
+														0,8,16,24,32,40,48,56,};
+	int BricksY[48] {0,0,0,0,0,0,0,0,
+					 2,2,2,2,2,2,2,2,
+					 4,4,4,4,4,4,4,4,
+					 6,6,6,6,6,6,6,6,
+					 8,8,8,8,8,8,8,8,
+					 10,10,10,10,10,10,10,10};
     /* Объявляйте ваши переменные здесь */
     /* Чтобы потом обращаться к ним, пишите data->ПЕРЕМЕННАЯ */
 };
@@ -129,9 +140,18 @@ static void BreakOut_render()
 {
     /* Здесь код, который будет вывзваться для отрисовки кадра */
     /* Он не должен менять состояние игры, для этого есть функция update */
-    game_draw_sprite(&YourSprite,data->BoardX,61,CYAN);
+    game_draw_sprite(&YourSprite,data->BoardX,61,WHITE);
     game_draw_sprite(&Ball,data->ballX,data->ballY,RED);
-	game_draw_sprite(&Brick,data->BricksX,data->BricksY,RED);
+	for(int i = 0; i < 16; i++) {
+
+		game_draw_sprite(&Brick, data->BricksX[i], data->BricksY[i], CYAN);
+
+	}
+	for(int i = 17; i < 32; i++) {
+
+		game_draw_sprite(&Brick, data->BricksX[i], data->BricksY[i], GREEN);
+
+	}
     /* Здесь (и только здесь) нужно вызывать функции game_draw_??? */
 }
 
@@ -149,9 +169,23 @@ static void BreakOut_update(unsigned long delta)
       
       }
 
-	  if((data->ballX==data->BoardX) && (data->ballX == 61)) {
+	  if((data->ballX>=data->BoardX) && (data->ballX<=data->BoardX+13) && ( data->ballX == 57)) {
 
 		  data->speedy = -data->speedy;
+
+	  }
+
+	  if( (data->ballX == 0) || (data->ballX == 60) ) data->speedx = -data->speedx;
+
+	  for(int i = 0; i < 48; i++) {
+
+		  if( (BricksX[i] >= ballX) %% (BricksX[i]+8 <= ballX) && (ballX == BricksY[i]) && (BricksX[i] != null) ) {
+
+				BricksX[i] = null;
+
+				data->speedy = -data->speedy;
+
+		  }
 
 	  }
 
