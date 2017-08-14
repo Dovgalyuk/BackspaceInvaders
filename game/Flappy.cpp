@@ -24,6 +24,7 @@ const game_sprite sprite_player PROGMEM = {
 #define PLAYER_X 12
 #define PLAYER_SKIP_Y 3
 #define LANDSCAPE_MAX 24
+#define BUBBLES 16
 
 struct FlappyData
 {
@@ -34,6 +35,10 @@ struct FlappyData
     int8_t down[WIDTH];
     int8_t curr;
     uint16_t score;
+    uint8_t bubblesX[BUBBLES];
+    uint8_t bubblesY[BUBBLES];
+    uint8_t bubblesC[BUBBLES];
+    uint8_t curr_bubble;
 };
 static FlappyData* data;
 
@@ -44,6 +49,10 @@ static void Flappy_reset()
     data->score = 0;
     for (int i = 0 ; i < WIDTH ; ++i)
         data->up[i] = data->down[i] = 1;
+    for (int i = 0 ; i < BUBBLES ; ++i)
+    {
+        data->bubblesC[i] = BLACK;
+    }
 }
 
 static void Flappy_prepare()
@@ -54,8 +63,15 @@ static void Flappy_prepare()
 
 static void Flappy_render()
 {
+    // draw bubbles
+    for (int i = 0 ; i < BUBBLES ; ++i)
+        game_draw_pixel(data->bubblesX[i], data->bubblesY[i], data->bubblesC[i]);
+
+    // draw submarine
     game_draw_sprite(&sprite_player, PLAYER_X, data->y, YELLOW);
-    for (int8_t i = 0 ; i < WIDTH ; ++i)
+
+    // draw landscape
+    for (int i = 0 ; i < WIDTH ; ++i)
     {
         int8_t c = (data->curr + i) % WIDTH;
         int8_t d = data->up[c];
@@ -63,6 +79,7 @@ static void Flappy_render()
         d = data->down[c];
         game_draw_vline(i, HEIGHT - d, HEIGHT - 1, GREEN);
     }
+    // draw score
     char s[6];
     sprintf(s, "%u", data->score);
     game_draw_text((uint8_t*)s, 0, 0, WHITE);
@@ -107,6 +124,18 @@ static void Flappy_update(unsigned long delta)
     else if (data->down[c] > LANDSCAPE_MAX)
         data->down[c] = LANDSCAPE_MAX;
     data->curr = (data->curr + 1) % WIDTH;
+
+    // update bubbles
+    for (int i = 0 ; i < BUBBLES ; ++i)
+    {
+        --data->bubblesY[i];
+        data->bubblesX[i] = data->bubblesX[i] - rand() % 2;
+    }
+    static const uint8_t colors[3] = {BLUE, CYAN, WHITE};
+    data->bubblesC[data->curr_bubble] = colors[rand() % 3];
+    data->bubblesX[data->curr_bubble] = PLAYER_X;
+    data->bubblesY[data->curr_bubble] = data->y + sprite_player.height - 2;
+    data->curr_bubble = (data->curr_bubble + 1) % BUBBLES;
 
     ++data->score;
 }
