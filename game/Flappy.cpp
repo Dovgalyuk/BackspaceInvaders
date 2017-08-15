@@ -89,10 +89,6 @@ static void Flappy_update(unsigned long delta)
     if (data->upd_speed)
         data->speed += 1;
     data->upd_speed = !data->upd_speed;
-    if (data->y < 0)
-        data->y = 0;
-    else if (data->y > HEIGHT - sprite_player.height)
-        data->y = HEIGHT - sprite_player.height;
 
     // any button is pressed
     if (game_is_any_button_pressed(0xffff))
