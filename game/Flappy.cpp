@@ -74,10 +74,8 @@ static void Flappy_render()
     for (int i = 0 ; i < WIDTH ; ++i)
     {
         int8_t c = (data->curr + i) % WIDTH;
-        int8_t d = data->up[c];
-        game_draw_vline(i, 0, d - 1, GREEN);
-        d = data->down[c];
-        game_draw_vline(i, HEIGHT - d, HEIGHT - 1, GREEN);
+        game_draw_pixel(i, data->up[c] - 1, GREEN);
+        game_draw_pixel(i, HEIGHT - data->down[c], GREEN);
     }
     // draw score
     char s[6];
