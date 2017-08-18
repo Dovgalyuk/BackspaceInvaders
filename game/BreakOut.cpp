@@ -3,6 +3,7 @@
 #include "libgame.h"
 #include "sprite.h"
 #include "binary.h"
+#include "string"
 #include <stdlib.h>
 
 /* Встроенные цвета:
@@ -110,7 +111,7 @@ const game_sprite Ball PROGMEM = {
 
 struct BreakOutData
 {
-	int Board1X,Board2X, flag, k, ballX, ballY,speedy,speedx;
+	int Board1Y, Board2Y, flag, k, ballX, ballY, speedy, speedx, lvlcount;
 	bool ft;
     /* Объявляйте ваши переменные здесь */
     /* Чтобы потом обращаться к ним, пишите data->ПЕРЕМЕННАЯ */
@@ -119,14 +120,17 @@ static BreakOutData* data; /* Эта переменная - указатель �
 
 static void BreakOut_prepare()
 {
-	//game_set_ups(30);
+	game_set_ups(10);
+	data->lvlcount = 0;
     data->ballX = 30;
 	data->ballY = 30;
     data->speedy = 1;
 	data->speedx = 1;
-	data->Board1X = 26;
-	data->Board2X = 26;
+	data->Board1Y = 26;
+	data->Board2Y = 26;
 	data->ft = true;
+
+	//while(!game_is_button_pressed(BUTTON_DOWN));
     /* Здесь код, который будет исполнятся один раз */
     /* Здесь нужно инициализировать переменные */
 }
@@ -135,9 +139,35 @@ static void BreakOut_render()
 {
     /* Здесь код, который будет вывзваться для отрисовки кадра */
     /* Он не должен менять состояние игры, для этого есть функция update */
-    game_draw_sprite(&YourSprite,0,data->Board2X,GREEN);
+    game_draw_sprite(&YourSprite,0,data->Board2Y,GREEN);
     game_draw_sprite(&Ball,data->ballX,data->ballY,RED);
-	game_draw_sprite(&YourSprite,61,data->Board1X,BLUE);
+	game_draw_sprite(&YourSprite,61,data->Board1Y,BLUE);
+	switch(data->lvlcount)
+	{
+	case 2:
+		game_draw_text((uint8_t*)"GO GO", 18, 26, WHITE);
+		game_set_ups(25);
+		break;
+	case 4: //10
+		game_draw_text((uint8_t*)"NORMA", 18, 26, GREEN);
+		game_set_ups(35);
+		break;
+	case 6: //20
+		game_draw_text((uint8_t*)"HARD", 18, 26, BROWN);
+		game_set_ups(45);
+		break;
+	case 8:
+		game_draw_text((uint8_t*)"HARDCORE", 12, 26, RED);
+		game_set_ups(55);
+		break;
+	case 10:
+		for(int i = 0; i < 1000; i++)
+		game_draw_text((uint8_t*)"SUICIDE", 12, 26, RED);
+		for(int i = 0; i < 1000; i++)
+		game_draw_text((uint8_t*)"SUICIDE", 12, 26, BROWN);
+		game_set_ups(65);
+		break;
+	}
     /* Здесь (и только здесь) нужно вызывать функции game_draw_??? */
 }
 
@@ -145,39 +175,38 @@ static void BreakOut_update(unsigned long delta)
 {
     /* Здесь код, который будет выполняться в цикле */
     /* Переменная delta содержит количество миллисекунд с последнего вызова */
-	
-    if(game_is_button_pressed(BUTTON_DOWN) && data->Board1X < 51)
+    if(game_is_button_pressed(BUTTON_DOWN) && data->Board1Y < 52)
     {
-      data->Board1X = (data->Board1X + 1);
+      data->Board1Y = (data->Board1Y + 1);
       }
-      if(game_is_button_pressed(BUTTON_UP) && data->Board1X > 0)
+      if(game_is_button_pressed(BUTTON_UP) && data->Board1Y > 0)
     {
-      data->Board1X = (data->Board1X - 1);
+      data->Board1Y = (data->Board1Y - 1);
       
       }
 
-	  if(game_is_button_pressed(BUTTON_A) && data->Board2X < 51)
+	  if(game_is_button_pressed(BUTTON_SW) && data->Board2Y < 52)
     {
-      data->Board2X = (data->Board2X + 1);
+      data->Board2Y = (data->Board2Y + 1);
       }
-      if(game_is_button_pressed(BUTTON_B) && data->Board2X > 0)
+      if(game_is_button_pressed(BUTTON_NW) && data->Board2Y > 0)
     {
-      data->Board2X = (data->Board2X - 1);
+      data->Board2Y = (data->Board2Y - 1);
       
       }
 
-	  if((data->ballX >= (data->Board1X - 4)) && (data->ballX <= (data->Board1X + 16)) && 
-		  ( (data->ballX == 57) || (data->ballX == 3) )) {
+	  if((data->ballY >= (data->Board1Y - 4)) && (data->ballY <= (data->Board1Y + 16)) && 
+		  ( (data->ballX == 57) )) {
 
 		  data->speedx = -data->speedx;
-
+			data->lvlcount++;
 	  }
 
-	  if((data->ballX >= (data->Board2X - 4)) && (data->ballX <= (data->Board2X + 16)) && 
-		  ( (data->ballX == 57) || (data->ballX == 3) ) ) {
+	  if((data->ballY >= (data->Board2Y - 6)) && 
+		  (data->ballY <= (data->Board2Y + 16)) && 
+		  ( (data->ballX == 3) ) ) {
 
 		  data->speedx = -data->speedx;
-
 	  }
 	  
 	  if( (data->ballY == 0) || (data->ballY == 60) ) data->speedy = -data->speedy;
