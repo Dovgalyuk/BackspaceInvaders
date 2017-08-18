@@ -2,6 +2,8 @@
 
 #include "libgame.h"
 #include "font.h"
+#include "controls.h"
+#include "graphics.h"
 
 #define PER_PAGE 64
 #define COLS 8

@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include "libgame.h"
 #include "binary.h"
-#include "sprite.h"
+#include "graphics.h"
+#include "controls.h"
 
 #define LEFT (BITMASK(BUTTON_NE) | BITMASK(BUTTON_LEFT))
 #define RIGHT (BITMASK(BUTTON_SE) | BITMASK(BUTTON_RIGHT))

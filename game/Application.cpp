@@ -2,6 +2,8 @@
 
 #include "libgame.h"
 #include "storage.h"
+#include "graphics.h"
+#include "controls.h"
 
 #define _OUTPUT_INSTANCES
 #include "games.h"
@@ -27,12 +29,6 @@ static unsigned long btn_timeout = 0;
 
 static bool btn_pressed = false;
 static game_instance* ptr;
-void prepare()
-{
-    game_setup();
-    storage_init();
-    game_set_ups(60);
-}
 
 void update(unsigned long delta)
 {
