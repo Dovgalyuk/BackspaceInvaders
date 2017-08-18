@@ -1,8 +1,9 @@
 #pragma GCC optimize ("-O3")
 
 #include "libgame.h"
-#include "sprite.h"
+#include "graphics.h"
 #include "binary.h"
+#include "controls.h"
 
 /* Встроенные цвета:
  *
