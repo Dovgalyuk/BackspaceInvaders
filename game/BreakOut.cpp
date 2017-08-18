@@ -189,7 +189,6 @@ static void BreakOut_render()
 		game_set_ups(65);
 		break;
 	}
-
 	if(!data->Bonus11Counter) { game_draw_sprite(&Bonus1Small,data->Bonus11X,data->Bonus11Y, White); data->B11C = 1; } 
 	if(!data->Bonus12Counter) { game_draw_sprite(&Bonus1Big,data->Bonus12X,data->Bonus12Y, White); data->B12C = 1; }
     /* Здесь (и только здесь) нужно вызывать функции game_draw_??? */
@@ -213,7 +212,6 @@ static void BreakOut_update(unsigned long delta)
 		if(i%2 != 0) {Bonus12X++; Bonus12Y++;}
 		else {Bonus12X--; Bonus12Y++;}
 	}
-
     if(game_is_button_pressed(BUTTON_DOWN) && data->Board1Y < 52)
     {
       data->Board1Y = (data->Board1Y + 1);
