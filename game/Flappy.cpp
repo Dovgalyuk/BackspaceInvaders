@@ -1,9 +1,10 @@
 #pragma GCC optimize ("-O3")
 
 #include "libgame.h"
-#include "sprite.h"
+#include "graphics.h"
 #include "binary.h"
 #include "font.h"
+#include "controls.h"
 
 const uint8_t lines_player[] PROGMEM = {
   B00000000, B00011100, //..........xxx

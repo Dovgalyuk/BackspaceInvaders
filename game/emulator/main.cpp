@@ -24,7 +24,8 @@
 #include <SFML/Graphics.hpp>
 #include <stdint.h>
 #include <libgame.h>
-#include <sprite.h>
+#include <graphics.h>
+#include <controls.h>
 #include <font.h>
 #include <storage.h>
 
@@ -186,7 +187,7 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
 
 int main()
 {
-    prepare();
+    game_setup();
     running_clock.restart();
     sf::Clock elapsed;
     while (window->isOpen())
