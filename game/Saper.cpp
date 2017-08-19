@@ -181,6 +181,8 @@ struct SaperData
     int x,m,n,b,v, y,mn;
 	int t[11][11];
     char q;
+	int j,h;
+	int gv;
 };
 static SaperData* data; /* Эта переменная - указатель на структуру, которая содержит ваши переменные */
 
@@ -258,10 +260,11 @@ for (int a=0 ;a<10;a++ )
 for (int i=0 ;i<10;i++ )
 if (data->t[a][i]==3 )
 {
-game_draw_sprite(&bl3, 14+i*5, 14+a*5, CYAN);
+game_draw_sprite(&bl4, 14+i*5, 14+a*5, BROWN);
 }
 /*1239123912*/
-game_draw_text((const uint8_t*)"rec  time", 0, 0, BLUE);
+game_draw_text((const uint8_t*)"HAVE   HI", 0, 0, BLUE);
+game_draw_text((const uint8_t*)"11", 4, 7, RED);
 for (int a=0 ;a<10;a++ )
 for (int i=0 ;i<10;i++ )
 if (data->t[a][i]>9)
@@ -269,11 +272,22 @@ if (data->t[a][i]>9)
 game_draw_sprite(&YourSprite1, 14+i*5, 14+a*5, CYAN);
 }
 game_draw_sprite(&bl, 13+data->x*5, 13+data->y*5, BLUE);
+char s[5];
+sprintf(s, "%d", data->h);
+game_draw_text((uint8_t*)s, 43, 7, RED);
+if(data->gv==1){
+game_draw_text((const uint8_t*)"GAME OVER", 0, 32, RED);
+
+}
     /* Здесь (и только здесь) нужно вызывать функции game_draw_??? */
 }
 
 static void Saper_update(unsigned long delta)
 {
+	if(data->j>1000){
+		data->h=data->h+1;
+			data->j=0;
+	}
 	if(game_is_button_pressed (BUTTON_UP) && data->m<3 && data->y>0)
   {
 	++data->m ;
@@ -310,18 +324,26 @@ if(data->v==2){
 	  }
   }
 
-if(!game_is_button_pressed (BUTTON_UP) &&   data->m>0)
+if(!game_is_button_pressed (BUTTON_UP) &&   data->m>0 )
 	  --data->m;
-if(!game_is_button_pressed (BUTTON_DOWN) &&   data->n>0)
+if(!game_is_button_pressed (BUTTON_DOWN) &&   data->n>0 )
 	  --data->n;	
-if(!game_is_button_pressed (BUTTON_LEFT) &&   data->b>0)
+if(!game_is_button_pressed (BUTTON_LEFT) &&   data->b>0 )
 	  --data->b;
-if(!game_is_button_pressed (BUTTON_RIGHT) &&   data->v>0)
+if(!game_is_button_pressed (BUTTON_RIGHT) &&   data->v>0 )
 	  --data->v;
-if(game_is_button_pressed (BUTTON_START) &&   data->t[data->y][data->x]>9)
-	  data->t[data->y][data->x]=data->t[data->y][data->x]-10;
-if(game_is_button_pressed (BUTTON_SELECT))
+if(game_is_button_pressed (BUTTON_START) &&   data->t[data->y][data->x]>9 && data->gv!=1)
+if(data->t[data->y][data->x]!=19){
+	data->t[data->y][data->x]=data->t[data->y][data->x]-10;
+}else
+{data->gv=1;
+
+}
+
+if(game_is_button_pressed (BUTTON_SELECT) )
 {/*9320939432483298493249832948392432492839432949349824343248380934289348934280923423*/
+	data->gv=0;
+data->h=0;
 for (int a=0 ;a<=10;a++ )
 for (int i=0 ;i<=10;i++ )
 data->t[a][i]=10;
@@ -372,7 +394,9 @@ data->t[a-1][data->mn-1]=data->t[a-1][data->mn-1]+1;
 }
   /* Здесь код, который будет выполняться в цикле */
     /* Переменная delta содержит количество миллисекунд с последнего вызова */
-
+if(data->gv==0){
+	data->j=data->j+delta;
+}
     /* Здесь можно работать с кнопками и обновлять переменные */
 }
 
