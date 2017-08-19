@@ -506,9 +506,10 @@ void BackspaceInvaders_update(unsigned long delta) {
                 {
                     if (data->invaderExplosion[i] != 0)
                     {
-                        data->invaderExplosion[i]++;
-                        if (data->invaderExplosion[i] > EXPLOSION_FRAMES)
+                        if (data->invaderExplosion[i] == EXPLOSION_FRAMES)
                             data->invaderType[i] = 0;
+                        else
+                            data->invaderExplosion[i]++;
                         continue;
                     }
                     int x = data->invaderX[i];
@@ -551,8 +552,8 @@ void BackspaceInvaders_update(unsigned long delta) {
                     if (data->lives)
                         --data->waveInvaders;
                     data->invadeTime = curTime;
-                    data->invaderType[i] = rand() % INVADER_TYPES + 1;
-                    int offs = rand() % (WIDTH - T_WIDTH - invader_width(data->invaderType[i]));
+                    uint8_t t = rand() % INVADER_TYPES + 1;
+                    int offs = rand() % (WIDTH - T_WIDTH - invader_width(t));
                     data->invaderPhase[i] = rand() % T_LENGTH;
                     data->invaderX[i] = offs + pgm_read_byte(&trajectory[data->invaderPhase[i]]);
                     data->invaderY[i] = 0;
@@ -561,6 +562,7 @@ void BackspaceInvaders_update(unsigned long delta) {
                     data->invaderColor[i] = colors[rand() % 5];
                     data->invaderSpeedY[i] = rand() % 2 + 1;
                     data->invaderSpeedX[i] = rand() % 4 + 1;
+                    data->invaderType[i] = t;
                     break;
                 }
         }
@@ -615,8 +617,8 @@ void BackspaceInvaders_update(unsigned long delta) {
             if (!haveInvaders && !data->waveInvaders && data->phase == PHASE_GAME)
             {
                 data->phase = PHASE_NEXT_WAVE;
+                data->invaderType[data->wave] = 0;
                 ++data->wave;
-                data->invaderType[data->wave - 1] = 0;
                 data->waveInvaders = data->wave * 10;
                 // Impossible mission
                 if (data->wave == MAX_WAVE)
