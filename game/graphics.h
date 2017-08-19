@@ -24,6 +24,11 @@ struct game_sprite
     const uint8_t *lines;
 };
 
+// Setup functions
+
+void game_enable_frame_buffer();
+
+// Sprite functions
 
 uint8_t game_sprite_width(const struct game_sprite *s);
 uint8_t game_sprite_height(const struct game_sprite *s);
@@ -40,7 +45,7 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color); // char is drawn wi
 // Called only by libgame
 
 void graphics_setup();
-void graphics_update();
+void graphics_render_frame();
 
 #endif
 
