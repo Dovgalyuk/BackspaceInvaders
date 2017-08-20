@@ -3,6 +3,7 @@
 #include "libgame.h"
 #include "graphics.h"
 #include "font.h"
+#include "font_data.h"
 
 ///////////////////
 // Configuration
@@ -231,6 +232,57 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
         if ((d >> (FONT_WIDTH - 1 - i)) & 1)
         {
             game_render_buf[x + i + ((y & ADDR_HIGH) << ADDR_SHIFT)] = game_make_color(color);
+        }
+    }
+}
+
+void game_draw_digits(uint16_t num, int len, int x, int y, uint8_t color)
+{
+#ifdef FRAME_BUFFER
+    if (!use_frame_buffer)
+#endif
+    {
+        if (game_render_y < (y & ADDR_LOW) || game_render_y >= (y & ADDR_LOW) + DIGIT_HEIGHT)
+            return;
+    }
+    if (y <= -DIGIT_HEIGHT || y >= HEIGHT)
+        return;
+    x += (len - 1) * (DIGIT_WIDTH + 1);
+    for (int i = len - 1 ; i >= 0 ; --i, x -= DIGIT_WIDTH + 1)
+    {
+        uint8_t d = num % 10;
+        num /= 10;
+#ifdef FRAME_BUFFER
+        if (use_frame_buffer)
+        {
+            for (int8_t dy = 0 ; dy < FONT_HEIGHT ; ++dy)
+            {
+                if (y + dy >= 0 && y + dy < HEIGHT)
+                {
+                    uint8_t dd = pgm_read_byte_near(digits_data + d * DIGIT_HEIGHT + dy);
+                    for (int b = 0 ; b < DIGIT_WIDTH ; ++b)
+                    {
+                        if ((dd >> (FONT_WIDTH - 1 - b)) & 1)
+                        {
+                            if (x + b >= 0 && x + b < WIDTH)
+                                frame[y + dy][x + b] = game_make_color(color);
+                        }
+                    }
+                }
+            }
+        }
+        else
+#endif
+        {
+            int pos = d * DIGIT_HEIGHT + (game_render_y - (y & ADDR_LOW));
+            uint8_t dd = pgm_read_byte_near(digits_data + pos);
+            for (int b = 0; b < DIGIT_WIDTH; ++b)
+            {
+                if ((dd >> (DIGIT_WIDTH - 1 - b)) & 1)
+                {
+                    game_render_buf[x + b + ((y & ADDR_HIGH) << ADDR_SHIFT)] = game_make_color(color);
+                }
+            }
         }
     }
 }

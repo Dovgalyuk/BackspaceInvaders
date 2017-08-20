@@ -5,6 +5,7 @@
 #include "binary.h"
 #include "graphics.h"
 #include "controls.h"
+#include "font.h"
 
 #define LEFT (BITMASK(BUTTON_NE) | BITMASK(BUTTON_LEFT))
 #define RIGHT (BITMASK(BUTTON_SE) | BITMASK(BUTTON_RIGHT))
@@ -37,7 +38,7 @@ enum Phases
 
 #define SCORE_X 48
 #define HISCORE_Y HISCORE_LABEL_Y
-#define SCORE_Y HISCORE_Y + DIGIT_H + 1
+#define SCORE_Y (HISCORE_Y + DIGIT_HEIGHT + 1)
 #define SCORE_DIGITS 4
 
 #define MAX_LIVES 3
@@ -318,100 +319,12 @@ const game_sprite pause PROGMEM = {
 };
 
 ////////////////////////////////////////////////////////////
-// Digits data
-////////////////////////////////////////////////////////////
-
-#define DIGIT_H 5
-const uint8_t digitLines[] PROGMEM = {
-    B01100000, // 0
-    B10100000,
-    B10100000,
-    B10100000,
-    B11000000,
-    B01000000, // 1
-    B11000000,
-    B01000000,
-    B01000000,
-    B01000000,
-    B11000000, // 2
-    B00100000,
-    B01000000,
-    B10000000,
-    B11100000,
-    B11000000, // 3
-    B00100000,
-    B01000000,
-    B00100000,
-    B11000000,
-    B10100000, // 4
-    B10100000,
-    B11100000,
-    B00100000,
-    B00100000,
-    B11100000, // 5
-    B10000000,
-    B11000000,
-    B00100000,
-    B11000000,
-    B01100000, // 6
-    B10000000,
-    B11100000,
-    B10100000,
-    B11100000,
-    B11100000, // 7
-    B00100000,
-    B01000000,
-    B10000000,
-    B10000000,
-    B11100000, // 8
-    B10100000,
-    B11100000,
-    B10100000,
-    B11100000,
-    B11100000, // 9
-    B10100000,
-    B11100000,
-    B00100000,
-    B11000000
-};
-
-const game_sprite digits[10] PROGMEM = {
-    {3, 5, 1, digitLines},
-    {3, 5, 1, digitLines + DIGIT_H},
-    {3, 5, 1, digitLines + DIGIT_H * 2},
-    {3, 5, 1, digitLines + DIGIT_H * 3},
-    {3, 5, 1, digitLines + DIGIT_H * 4},
-    {3, 5, 1, digitLines + DIGIT_H * 5},
-    {3, 5, 1, digitLines + DIGIT_H * 6},
-    {3, 5, 1, digitLines + DIGIT_H * 7},
-    {3, 5, 1, digitLines + DIGIT_H * 8},
-    {3, 5, 1, digitLines + DIGIT_H * 9},
-};
-
-////////////////////////////////////////////////////////////
 // Trajectory data
 ////////////////////////////////////////////////////////////
 
 #define T_LENGTH 64
 #define T_WIDTH 49
 const uint8_t trajectory[T_LENGTH] PROGMEM = {24, 26, 28, 30, 33, 35, 37, 39, 40, 42, 43, 45, 46, 46, 47, 47, 48, 47, 47, 46, 46, 45, 43, 42, 40, 39, 37, 35, 33, 30, 28, 26, 23, 21, 19, 17, 14, 12, 10, 8, 7, 5, 4, 2, 1, 1, 0, 0, 0, 0, 0, 1, 1, 2, 4, 5, 7, 8, 10, 12, 14, 17, 19, 21};
-
-void render_digits(uint16_t num, int len, int x, int y, uint8_t color)
-{
-    uint8_t d[8] = {0};
-    int i = len - 1;
-    uint16_t s = num;
-    while (i >= 0 && s)
-    {
-        d[i--] = s % 10;
-        s /= 10;
-    }
-    for (int i = 0 ; i < len ; ++i)
-    {
-        game_draw_sprite(&digits[d[i]], x, y, color);
-        x += game_sprite_width(&digits[d[i]]) + 1;
-    }
-}
 
 void BackspaceInvaders_render()
 {
@@ -466,14 +379,14 @@ void BackspaceInvaders_render()
     if (data->phase == PHASE_GAME || data->phase == PHASE_NEXT_WAVE || data->phase == PHASE_PAUSED)
     {
         game_draw_sprite(&wave_sprite, WAVE_X, WAVE_Y, CYAN);
-        render_digits(data->wave, 2, WAVE_X + 1 + game_sprite_width(&wave_sprite), WAVE_Y, WHITE);
+        game_draw_digits(data->wave, 2, WAVE_X + 1 + game_sprite_width(&wave_sprite), WAVE_Y, WHITE);
     }
 
     // draw score
     game_draw_sprite(&hiLabel, HISCORE_LABEL_X, HISCORE_Y, CYAN);
-    render_digits(data->hiscore, SCORE_DIGITS, SCORE_X, HISCORE_Y, WHITE);
+    game_draw_digits(data->hiscore, SCORE_DIGITS, SCORE_X, HISCORE_Y, WHITE);
     if (data->started)
-        render_digits(data->score, SCORE_DIGITS, SCORE_X, SCORE_Y, WHITE);
+        game_draw_digits(data->score, SCORE_DIGITS, SCORE_X, SCORE_Y, WHITE);
 
     // draw logo
     if (data->phase == PHASE_LOGO)
