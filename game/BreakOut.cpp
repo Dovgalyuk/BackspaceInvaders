@@ -126,33 +126,34 @@ static void BreakOut_render()
 	
 	switch(data->lvlcount)
 	{
-	case 2:
+	case 3:
 		game_draw_text((uint8_t*)"GO GO", 18, 26, WHITE);
 		game_set_ups(25);
 		break;
 
-	case 7: //10
+	case 10: //10
 		game_draw_text((uint8_t*)"NORMA", 18, 26, GREEN);
 		game_set_ups(35);
 		break;
 
-	case 12: //20
+	case 20: //20
 		game_draw_text((uint8_t*)"HARD", 18, 26, YELLOW);
 		game_set_ups(45);
 		break;
 
-	case 15:
+	case 30:
 		game_draw_text((uint8_t*)"HARDCORE", 12, 26, RED);
 		game_set_ups(55);
 		break;
 
-	case 20:
-		game_draw_text((uint8_t*)"SUICIDE", 12, 26, RED);
-		
-		game_set_ups(data->i);
-		i++;
-		break;
+	
 	}
+	if(data->lvlcount > 40 && (data->lvlcount % 4 == 0)) { 
+		data->i++;
+		game_set_ups(data->i);
+		game_draw_text((uint8_t*)"SUICIDE", 12, 26, PURPLE);
+	}
+		
 }
 
 static void BreakOut_update(unsigned long delta)
