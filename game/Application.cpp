@@ -2,6 +2,8 @@
 
 #include "libgame.h"
 #include "storage.h"
+#include "graphics.h"
+#include "controls.h"
 
 #define _OUTPUT_INSTANCES
 #include "games.h"
@@ -14,7 +16,7 @@
 // need some space for stack and system variables
 #define AVAIL_SPACE 1024
 
-static uint8_t N_GAMES;
+#define N_GAMES (sizeof(instances) / sizeof(game_instance))
 
 static uint8_t sel = 0;
 
@@ -25,21 +27,13 @@ static unsigned long cur_time = 0;
 static unsigned long btn_timeout = 0;
 #define BUTTON_DELAY 200
 
-static bool game_running = false;
 static bool btn_pressed = false;
 static game_instance* ptr;
-void prepare()
-{
-    N_GAMES = sizeof(instances) / sizeof(game_instance);
-    game_setup();
-    storage_init();
-    game_set_ups(60);
-}
 
 void update(unsigned long delta)
 {
     cur_time += delta;
-    if (!game_running)
+    if (!ptr)
     {
         if (cur_time < btn_timeout) return;
         if ((game_is_any_button_pressed(DOWN)) && sel < (N_GAMES - 1))
@@ -57,7 +51,6 @@ void update(unsigned long delta)
         {
             // run game
             ptr = instances + sel;
-            game_running = true;
             *(ptr->data) = memory;
             ptr->prepare();
         }
@@ -70,7 +63,7 @@ void update(unsigned long delta)
 
 void render()
 {
-    if (!game_running)
+    if (!ptr)
     {
         for (uint8_t iter = 0; iter < N_GAMES; ++iter)
         {

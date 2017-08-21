@@ -4,6 +4,8 @@
 #include "font.h"
 #include "binary.h"
 #include "avrfix.h"
+#include "controls.h"
+#include "graphics.h"
 
 #define W 8
 #define H 8

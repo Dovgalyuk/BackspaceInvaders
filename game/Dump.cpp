@@ -3,6 +3,8 @@
 #ifndef EMULATED
 #include "libgame.h"
 #include "font.h"
+#include "graphics.h"
+#include "controls.h"
 #include <avr/eeprom.h>
 
 #define COLS 4
