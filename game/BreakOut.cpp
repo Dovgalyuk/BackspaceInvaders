@@ -1,10 +1,11 @@
 #pragma GCC optimize ("-O3")
 
 #include "libgame.h"
-#include "sprite.h"
+#include "graphics.h"
 #include "binary.h"
 //#include "Arduino.h"
 #include <stdlib.h>
+#include "controls.h"
 //изменить управление!!!!!!!!!!!!!
 /* Встроенные цвета:
  *
@@ -14,11 +15,11 @@
  *  RED - Красный
  *  CYAN - Циановый
  *  PURPLE - Фиолетовый
- *  BROWN - Коричневый
+ *  YELLOW - Коричневый
  *  WHITE - Белый
  *
  *  Для использования 64-х цветной палитры, укажите в game.ino COLOR_6BIT = 1
- *
+ * 
  * */
 
 /* Кнопки:
@@ -135,7 +136,7 @@ static void BreakOut_render()
 		break;
 
 	case 12: //20
-		game_draw_text((uint8_t*)"HARD", 18, 26, BROWN);
+		game_draw_text((uint8_t*)"HARD", 18, 26, YELLOW);
 		game_set_ups(45);
 		break;
 
