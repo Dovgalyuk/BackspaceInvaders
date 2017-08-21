@@ -36,6 +36,7 @@ struct FlappyData
     int8_t down[WIDTH];
     int8_t curr;
     uint16_t score;
+    uint16_t hiscore;
     uint8_t bubblesX[BUBBLES];
     uint8_t bubblesY[BUBBLES];
     uint8_t bubblesC[BUBBLES];
@@ -79,9 +80,9 @@ static void Flappy_render()
         game_draw_pixel(i, HEIGHT - data->down[c], GREEN);
     }
     // draw score
-    char s[6];
-    sprintf(s, "%u", data->score);
-    game_draw_text((uint8_t*)s, 0, 0, WHITE);
+    game_draw_digits(data->score, 4, 0, 0, WHITE);
+    // draw hiscore
+    game_draw_digits(data->hiscore, 4, WIDTH - (DIGIT_WIDTH + 1) * 4, 0, WHITE);
 }
 
 static void Flappy_update(unsigned long delta)
@@ -102,6 +103,9 @@ static void Flappy_update(unsigned long delta)
         if (data->y + PLAYER_SKIP_Y < data->up[(c + i) % WIDTH]
             || data->y + sprite_player.height > HEIGHT - data->down[(c + i) % WIDTH])
         {
+            // save high score
+            if (data->score > data->hiscore)
+                data->hiscore = data->score;
             Flappy_reset();
         }
     }
