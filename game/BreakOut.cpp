@@ -91,7 +91,7 @@ static void BreakOut_prepare()
 
 	game_set_ups(10);
 	data->lvlcount = 0;
-	data->i  = 75;
+	data->i  = 65;
     data->ballX = data->ballY = 30;
 	if(rand() % 2) data->speedx = 1;
 	else data->speedx = -1;
@@ -148,10 +148,12 @@ static void BreakOut_render()
 
 	
 	}
+
+	if(data->lvlcount == 41) game_draw_text((uint8_t*)"SUICIDE", 12, 26, PURPLE);
 	if(data->lvlcount > 40 && (data->lvlcount % 4 == 0)) { 
 		data->i++;
 		game_set_ups(data->i);
-		game_draw_text((uint8_t*)"SUICIDE", 12, 26, PURPLE);
+		
 	}
 		
 }
