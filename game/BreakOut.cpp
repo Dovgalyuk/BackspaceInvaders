@@ -3,9 +3,9 @@
 #include "libgame.h"
 #include "sprite.h"
 #include "binary.h"
-#include "string"
+//#include "Arduino.h"
 #include <stdlib.h>
-
+//изменить управление!!!!!!!!!!!!!
 /* Встроенные цвета:
  *
  *  BLACK - Чёрный
@@ -39,27 +39,6 @@
  *
  * */
 
-/* Спрайты
- * 
- * максимальная высота - 16 пикселей
-
- определение спрайта
-
-
-   x     x      
-    x   x       
-     x x        
-  xxxxxxxxx     
- xxxxxxxxxxx    
-xxx  xxx  xxx   
- xxxxxxxxxxx    
-  xxxxxxxxx     
-    x x x       
-   x     x      
-
-
- --------------------------------
- */
 const uint8_t BoardData[] PROGMEM = {
     B11110000, 
 	B11110000,
@@ -75,196 +54,148 @@ const uint8_t BoardData[] PROGMEM = {
 	B11110000
 };
 
-const uint8_t Bonus1Data[] PROGMEM = {
-	B11111111, B11111111,
-	B11111111, B11111111,
-	B11111111, B11111111,
-	B11111111, B11111111
-};
-
-const game_sprite Bonus1Small PROGMEM = {
-	8, 2, 2, Bonus1Data
-};
-
-const game_sprite Bonus1Big PROGMEM = {
-	16, 2, 2, Bonus1Data
-};
-
 const game_sprite Board PROGMEM = {
-    // ШИРИНА, ВЫСОТА, КОЛИЧЕСТВО БАЙТ НА СТРОКУ, ДАННЫЕ
     3, 12, 1, BoardData
 };
 const uint8_t BallData[] PROGMEM = {
-    B01100000, //   xxxx  
-    B11110000, // xxxxxxxx
-    B11110000, //  xxxxxxxx
-    B01100000  //    xxxx
+    B01100000,  
+    B11110000, 
+    B11110000, 
+    B01100000  
 };
 
 const game_sprite Ball PROGMEM = {
-    // ШИРИНА, ВЫСОТА, КОЛИЧЕСТВО БАЙТ НА СТРОКУ, ДАННЫЕ
      4, 4, 1, BallData
 };
 
+const game_sprite Bonus PROGMEM = {
+	2, 2, 1, BallData
+};
 
 
-/* Функции отрисовки
- *
- * game_draw_pixel(x, y, color) - Красит точку (x, y) в цвет color
- * game_draw_char(char, x, y, color) - Выводит символ char с левым верхним углом в точке (x, y) с цветом color
- * game_draw_text(string, x, y, color) - Выводит строку string с левым верхним углом в точке (x, y) с цветом color
- * game_draw_sprite(sprite, x, y, color) - Выводит спрайт sprite с левым верхним углом в точке (x, y) с цветом color
- *
- * */
 
-/* Функции ввода
- *
- * game_is_button_pressed(button) - Нажата ли кнопка? Например: game_is_button_pressed(BUTTON_START)
- * game_is_any_button_pressed(mask) - Нажата ли хотя бы одна кнопка? Например: game_is_any_button_pressed(BITMASK(BUTTON_SW) | BITMASK(BUTTON_DOWN))
- *
- * */
 
 struct BreakOutData
 {
-	int Board1Y, Board2Y, flag, k, ballX, ballY, speedy, speedx, lvlcount;
-	int Bonus11Counter, Bonus12Counter, Bonus11X, Bonus11Y, Bonus12X, Bonus12Y;
-	bool ft, B11C, B12C;
-    /* Объявляйте ваши переменные здесь */
-    /* Чтобы потом обращаться к ним, пишите data->ПЕРЕМЕННАЯ */
+	int Board1Y, Board2Y, 
+		flag, k, ballX, 
+		ballY, speedy, 
+		speedx, lvlcount;
+    
 };
-static BreakOutData* data; /* Эта переменная - указатель на структуру, которая содержит ваши переменные */
+static BreakOutData* data;
 
 static void BreakOut_prepare()
 {
+
 	game_set_ups(10);
 	data->lvlcount = 0;
-    data->ballX = 30;
-	data->ballY = 30;
-    data->speedy = rand(-1,1);
-	data->speedx = rand(-1,1);
-	data->Board1Y = 26;
-	data->Board2Y = 26;
-	data->ft = true;
-	data->Bonus11X = 24;
-	data->Bonus11Y = -1;
-	data->Bonus12X = 16;
-	data->Bonus12Y = -1;
-	data->B11C = 0;
-	data->B12C = 0;
-	//while(!game_is_button_pressed(BUTTON_DOWN));
-    /* Здесь код, который будет исполнятся один раз */
-    /* Здесь нужно инициализировать переменные */
+    data->ballX = data->ballY = 30;
+	if(rand() % 2) data->speedx = 1;
+	else data->speedx = -1;
+	if(rand() % 2) data->speedy = 1;
+	else data->speedy = -1;
+	data->Board1Y = data->Board2Y  = 26;
+	
+	 
 }
 
 static void BreakOut_render()
-{
-    /* Здесь код, который будет вывзваться для отрисовки кадра */
-    /* Он не должен менять состояние игры, для этого есть функция update */
+{	
+	if( (data->ballX > 64) || 
+		(data->ballX < 0))
+	{
+		if(data->ballX > 64)
+		{
+			game_draw_text((const unsigned char*)"P2 WINS",12,18,GREEN);
+			if(game_is_button_pressed(BUTTON_START))
+			BreakOut_prepare();
+		}
+		else{
+			game_draw_text((const unsigned char*)"P1 WINS",12,18,BLUE);
+			if(game_is_button_pressed(BUTTON_START))
+			BreakOut_prepare();
+		}
+	}
+
     game_draw_sprite(&Board,0,data->Board2Y,GREEN);
     game_draw_sprite(&Ball,data->ballX,data->ballY,RED);
 	game_draw_sprite(&Board,61,data->Board1Y,BLUE);
+
 	switch(data->lvlcount)
 	{
 	case 2:
 		game_draw_text((uint8_t*)"GO GO", 18, 26, WHITE);
 		game_set_ups(25);
 		break;
-	case 4: //10
+
+	case 7: //10
 		game_draw_text((uint8_t*)"NORMA", 18, 26, GREEN);
 		game_set_ups(35);
 		break;
-	case 6: //20
+
+	case 12: //20
 		game_draw_text((uint8_t*)"HARD", 18, 26, BROWN);
 		game_set_ups(45);
 		break;
-	case 8:
+
+	case 15:
 		game_draw_text((uint8_t*)"HARDCORE", 12, 26, RED);
 		game_set_ups(55);
 		break;
-	case 10:
-		for(int i = 0; i < 1000; i++)
+
+	case 20:
 		game_draw_text((uint8_t*)"SUICIDE", 12, 26, RED);
-		for(int i = 0; i < 1000; i++)
-		game_draw_text((uint8_t*)"SUICIDE", 12, 26, BROWN);
-		game_set_ups(65);
+		game_set_ups(75);
 		break;
 	}
-	if(!data->Bonus11Counter) { game_draw_sprite(&Bonus1Small,data->Bonus11X,data->Bonus11Y, White); data->B11C = 1; } 
-	if(!data->Bonus12Counter) { game_draw_sprite(&Bonus1Big,data->Bonus12X,data->Bonus12Y, White); data->B12C = 1; }
-    /* Здесь (и только здесь) нужно вызывать функции game_draw_??? */
 }
 
 static void BreakOut_update(unsigned long delta)
 {
-    /* Здесь код, который будет выполняться в цикле */
-    /* Переменная delta содержит количество миллисекунд с последнего вызова */
-	data->Bonus11Counter = rand(0,20);
-	data->Bonus12Counter = rand(0,25);
-
-	while(B11C) {
-		int i = 0;
-		if(i%2 != 0) {Bonus11X++; Bonus11Y++;}
-		else {Bonus11X--; Bonus11Y++;}
-	}
-
-	while(B12C) {
-		int i = 0;
-		if(i%2 != 0) {Bonus12X++; Bonus12Y++;}
-		else {Bonus12X--; Bonus12Y++;}
-	}
     if(game_is_button_pressed(BUTTON_DOWN) && data->Board1Y < 52)
-    {
-      data->Board1Y = (data->Board1Y + 1);
-      }
-      if(game_is_button_pressed(BUTTON_UP) && data->Board1Y > 0)
-    {
-      data->Board1Y = (data->Board1Y - 1);
-      
-      }
+		data->Board1Y = (data->Board1Y + 1);
 
-	  if(game_is_button_pressed(BUTTON_SW) && data->Board2Y < 52)
-    {
-      data->Board2Y = (data->Board2Y + 1);
-      }
-      if(game_is_button_pressed(BUTTON_NW) && data->Board2Y > 0)
-    {
-      data->Board2Y = (data->Board2Y - 1);
-      
-      }
+    if(game_is_button_pressed(BUTTON_UP) && data->Board1Y > 0)
+		data->Board1Y = (data->Board1Y - 1);
+	if(true){
+	if(game_is_button_pressed(BUTTON_SW) && data->Board2Y < 52)
+		data->Board2Y = (data->Board2Y + 1);
 
-	  if((data->ballY >= (data->Board1Y - 4)) && (data->ballY <= (data->Board1Y + 16)) && 
-		  ( (data->ballX == 57) )) {
+    if(game_is_button_pressed(BUTTON_NW) && data->Board2Y > 0)
+		data->Board2Y = (data->Board2Y - 1);
+	}
+	else if(data->ballY <= 52)
+			data->Board2Y = data->ballY;
 
-		  data->speedx = -data->speedx;
-			data->lvlcount++;
-	  }
+	if((data->ballY >= data->Board1Y - 4) && 
+		(data->ballY <= data->Board1Y + 16) && 
+			(data->ballX == 57)) 
+	{
+		data->speedx = -data->speedx;
+		data->lvlcount++;
+	}
 
-	  if((data->ballY >= (data->Board2Y - 6)) && 
-		  (data->ballY <= (data->Board2Y + 16)) && 
-		  ( (data->ballX == 3) ) ) {
+	if((data->ballY >= data->Board2Y - 6) && 
+		(data->ballY <= data->Board2Y + 16) && 
+			( data->ballX == 3) ) {
 
 		  data->speedx = -data->speedx;
+		  data->lvlcount++;
 	  }
 	  
-	  if( (data->ballY == 0) || (data->ballY == 60) ) data->speedy = -data->speedy;
+	  if( (data->ballY == 0) || (data->ballY == 60) ) 
+		  data->speedy = -data->speedy;
 
-	  if(1){
       data->ballX += data->speedx;
-      
       data->ballY += data->speedy;
-	  }
-	  data->ft = !(data->ft);
-    /* Здесь можно работать с кнопками и обновлять переменные */
+
 }
-
-
 game_instance BreakOut = {
-    "BreakOut",         /* Имя, отображаемое в меню */
+    "BreakOut",
     BreakOut_prepare,
     BreakOut_render,
     BreakOut_update,
     sizeof(BreakOutData),
     (void**)(&data)
 };
-
-/* Не забудьте зарегистрировать игру в games.h */
