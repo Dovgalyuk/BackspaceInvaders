@@ -24,9 +24,11 @@
 #include <SFML/Graphics.hpp>
 #include <stdint.h>
 #include <libgame.h>
-#include <sprite.h>
-#include <font.h>
-#include <storage.h>
+#include "graphics.h"
+#include "controls.h"
+#include "font.h"
+#include "storage.h"
+#include "font_data.h"
 
 const int SCALE = 8;
 
@@ -74,6 +76,12 @@ void game_draw_pixel(int x, int y, uint8_t c)
     (*screen)[pos + 1].color = color;
     (*screen)[pos + 2].color = color;
     (*screen)[pos + 3].color = color;
+}
+
+void game_draw_vline(int x, int y1, int y2, uint8_t color)
+{
+    for (int i = y1 ; i <= y2 ; ++i)
+        game_draw_pixel(x, i, color);
 }
 
 void clear_screen()
@@ -178,9 +186,28 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
     }
 }
 
+void game_draw_digits(uint16_t num, int len, int x, int y, uint8_t color)
+{
+    x += (len - 1) * (DIGIT_WIDTH + 1);
+    for (int i = len - 1 ; i >= 0 ; --i, x -= DIGIT_WIDTH + 1)
+    {
+        uint8_t d = num % 10;
+        num /= 10;
+        for (int8_t dy = 0 ; dy < DIGIT_HEIGHT ; ++dy)
+        {
+            uint8_t dd = digits_data[d * DIGIT_HEIGHT + dy];
+            for (int b = 0 ; b < DIGIT_WIDTH ; ++b)
+            {
+                if ((dd >> (DIGIT_WIDTH - 1 - b)) & 1)
+                    game_draw_pixel(x + b, y + dy, color);
+            }
+        }
+    }
+}
+
 int main()
 {
-    prepare();
+    game_setup();
     running_clock.restart();
     sf::Clock elapsed;
     while (window->isOpen())
