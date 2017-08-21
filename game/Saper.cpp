@@ -1,9 +1,9 @@
 #pragma GCC optimize ("-O3")
 
 #include "libgame.h"
-#include "sprite.h"
+#include "graphics.h"
 #include "binary.h"
-
+#include "controls.h"
 /* Встроенные цвета:
  *
  *  BLACK - Чёрный
@@ -260,7 +260,7 @@ for (int a=0 ;a<10;a++ )
 for (int i=0 ;i<10;i++ )
 if (data->t[a][i]==3 )
 {
-game_draw_sprite(&bl4, 14+i*5, 14+a*5, BROWN);
+game_draw_sprite(&bl4, 14+i*5, 14+a*5, BLUE);
 }
 /*1239123912*/
 game_draw_text((const uint8_t*)"HAVE   HI", 0, 0, BLUE);
