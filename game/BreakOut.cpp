@@ -80,7 +80,7 @@ struct BreakOutData
 {
 	int Board1Y, Board2Y, 
 		flag, k, ballX, 
-		ballY, speedy, 
+		ballY, speedy, i,
 		speedx, lvlcount;
     
 };
@@ -91,6 +91,7 @@ static void BreakOut_prepare()
 
 	game_set_ups(10);
 	data->lvlcount = 0;
+	data->i  = 75;
     data->ballX = data->ballY = 30;
 	if(rand() % 2) data->speedx = 1;
 	else data->speedx = -1;
@@ -122,7 +123,7 @@ static void BreakOut_render()
     game_draw_sprite(&Board,0,data->Board2Y,GREEN);
     game_draw_sprite(&Ball,data->ballX,data->ballY,RED);
 	game_draw_sprite(&Board,61,data->Board1Y,BLUE);
-
+	
 	switch(data->lvlcount)
 	{
 	case 2:
@@ -147,7 +148,9 @@ static void BreakOut_render()
 
 	case 20:
 		game_draw_text((uint8_t*)"SUICIDE", 12, 26, RED);
-		game_set_ups(75);
+		
+		game_set_ups(data->i);
+		i++;
 		break;
 	}
 }
@@ -160,10 +163,10 @@ static void BreakOut_update(unsigned long delta)
     if(game_is_button_pressed(BUTTON_UP) && data->Board1Y > 0)
 		data->Board1Y = (data->Board1Y - 1);
 	if(true){
-	if(game_is_button_pressed(BUTTON_SW) && data->Board2Y < 52)
+	if(game_is_button_pressed(BUTTON_A) && data->Board2Y < 52)
 		data->Board2Y = (data->Board2Y + 1);
 
-    if(game_is_button_pressed(BUTTON_NW) && data->Board2Y > 0)
+    if(game_is_button_pressed(BUTTON_B) && data->Board2Y > 0)
 		data->Board2Y = (data->Board2Y - 1);
 	}
 	else if(data->ballY <= 52)
