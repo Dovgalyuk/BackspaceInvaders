@@ -158,6 +158,7 @@ const game_sprite bl4 PROGMEM = {
     // ШИРИНА, ВЫСОТА, КОЛИЧЕСТВО БАЙТ НА СТРОКУ, ДАННЫЕ
     5, 5, 1, bl4_lines
 };
+
 /* Функции отрисовки
  *
  * game_draw_pixel(x, y, color) - Красит точку (x, y) в цвет color
@@ -183,221 +184,165 @@ struct SaperData
     char q;
 	int j,h;
 	int gv;
+    int io,bb;
 };
 static SaperData* data; /* Эта переменная - указатель на структуру, которая содержит ваши переменные */
 
 static void Saper_prepare()
 {
-	
+    data->gv=0;
+    data->h=0;
     /* Здесь код, который будет исполнятся один раз */
     /* Здесь нужно инициализировать переменные */
-/*9320939432483298493249832948392432492839432949349824343248380934289348934280923423*/
-for (int a=0 ;a<=10;a++ )
-for (int i=0 ;i<=10;i++ )
-data->t[a][i]=10;
+    /*9320939432483298493249832948392432492839432949349824343248380934289348934280923423*/
+    for (int a=0 ;a<=10;a++ )
+        for (int i=0 ;i<=10;i++ )
+            data->t[a][i]=10;
 
-
-
-for (int a=1;a<9;a++)
-{
-data->mn=rand()%10;
-data->t[a][data->mn]=19;
-if (data->t[a][data->mn+1]!=19){
-data->t[a][data->mn+1]=data->t[a][data->mn+1]+1;
-}
-if (data->t[a][data->mn-1]!=19){
-data->t[a][data->mn-1]=data->t[a][data->mn-1]+1;
-}
-if (data->t[a+1][data->mn]!=19){
-data->t[a+1][data->mn]=data->t[a+1][data->mn]+1;
-}
-if (data->t[a-1][data->mn]!=19){
-data->t[a-1][data->mn]=data->t[a-1][data->mn]+1;
-}
-/*308019283129830912*/
-if (data->t[a+1][data->mn+1]!=19){
-data->t[a+1][data->mn+1]=data->t[a+1][data->mn+1]+1;
-}
-if (data->t[a+1][data->mn-1]!=19){
-data->t[a+1][data->mn-1]=data->t[a+1][data->mn-1]+1;
-}
-if (data->t[a-1][data->mn+1]!=19){
-data->t[a-1][data->mn+1]=data->t[a-1][data->mn+1]+1;
-}
-if (data->t[a-1][data->mn-1]!=19){
-data->t[a-1][data->mn-1]=data->t[a-1][data->mn-1]+1;
-}
-/*3420932840932*/
-}
-/*0293019381293820938012981328932891328091328793287132287913287123712937123871213270132*/
+    for (int a=1;a<9;a++)
+    {
+        data->mn=rand()%10;
+        data->t[a][data->mn]=19;
+        if (data->t[a][data->mn+1]!=19){
+            data->t[a][data->mn+1]=data->t[a][data->mn+1]+1;
+        }
+        if (data->t[a][data->mn-1]!=19){
+            data->t[a][data->mn-1]=data->t[a][data->mn-1]+1;
+        }
+        if (data->t[a+1][data->mn]!=19){
+            data->t[a+1][data->mn]=data->t[a+1][data->mn]+1;
+        }
+        if (data->t[a-1][data->mn]!=19){
+            data->t[a-1][data->mn]=data->t[a-1][data->mn]+1;
+        }
+        /*308019283129830912*/
+        if (data->t[a+1][data->mn+1]!=19){
+            data->t[a+1][data->mn+1]=data->t[a+1][data->mn+1]+1;
+        }
+        if (data->t[a+1][data->mn-1]!=19){
+            data->t[a+1][data->mn-1]=data->t[a+1][data->mn-1]+1;
+        }
+        if (data->t[a-1][data->mn+1]!=19){
+            data->t[a-1][data->mn+1]=data->t[a-1][data->mn+1]+1;
+        }
+        if (data->t[a-1][data->mn-1]!=19){
+            data->t[a-1][data->mn-1]=data->t[a-1][data->mn-1]+1;
+        }
+        /*3420932840932*/
+    }
+    /*0293019381293820938012981328932891328091328793287132287913287123712937123871213270132*/
 }
 
 static void Saper_render()
 {
     /* Здесь код, который будет вывзваться для отрисовки кадра */
     /* Он не должен менять состояние игры, для этого есть функция update */
-for (int a=0 ;a<10;a++ )
-for (int i=0 ;i<10;i++ )
-if (data->t[a][i]==9)
-{
-game_draw_sprite(&bl1, 14+i*5, 14+a*5, RED);
-}
-for (int a=0 ;a<10;a++ )
-for (int i=0 ;i<10;i++ )
-if (data->t[a][i]==1 )
-{
-game_draw_sprite(&bl2, 14+i*5, 14+a*5, BLUE);
-}
-for (int a=0 ;a<10;a++ )
-for (int i=0 ;i<10;i++ )
-if (data->t[a][i]==2 )
-{
-game_draw_sprite(&bl3, 14+i*5, 14+a*5, CYAN);
-}
-/*12930928103*/
+    for (int a=0 ;a<10;a++ )
+        for (int i=0 ;i<10;i++ )
+        {
+            static const game_sprite *spr[20] = {NULL,&bl2,&bl3,&bl4,NULL,NULL,NULL,NULL,NULL,&bl1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1};
+            static const uint8_t col[20] = {BLACK, BLUE, CYAN, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,RED, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN};
+            if (spr[data->t[a][i]])
+                game_draw_sprite(spr[data->t[a][i]], 14+i*5, 14+a*5, col[data->t[a][i]]);
+        }
 
-for (int a=0 ;a<10;a++ )
-for (int i=0 ;i<10;i++ )
-if (data->t[a][i]==3 )
-{
-game_draw_sprite(&bl4, 14+i*5, 14+a*5, BLUE);
-}
-/*1239123912*/
-game_draw_text((const uint8_t*)"HAVE   HI", 0, 0, BLUE);
-game_draw_text((const uint8_t*)"11", 4, 7, RED);
-for (int a=0 ;a<10;a++ )
-for (int i=0 ;i<10;i++ )
-if (data->t[a][i]>9)
-{
-game_draw_sprite(&YourSprite1, 14+i*5, 14+a*5, CYAN);
-}
-game_draw_sprite(&bl, 13+data->x*5, 13+data->y*5, BLUE);
-char s[5];
-sprintf(s, "%d", data->h);
-game_draw_text((uint8_t*)s, 43, 7, RED);
-if(data->gv==1){
-game_draw_text((const uint8_t*)"GAME OVER", 0, 32, RED);
 
-}
+   game_draw_text((const uint8_t*)"HAVE   HI", 0, 0, BLUE);
+   // game_draw_text((const uint8_t*)"11", 4, 7, RED);
+
+    game_draw_sprite(&bl, 13+data->x*5, 13+data->y*5, BLUE);
+    char s[5];
+    sprintf(s, "%d", data->h);
+    game_draw_text((uint8_t*)s, 43, 7, RED);
+
+    sprintf(s, "%d", data->bb);
+    game_draw_text((uint8_t*)s, 4, 7, RED);
+
+    if(data->gv==1){
+        game_draw_text((const uint8_t*)"GAME OVER", 0, 32, RED);
+
+    }
+
+    if(data->io>90)
+    {
+        if(data->bb>data->h){
+        data->bb=data->h;
+
+    }
+    game_draw_text((const uint8_t*)"WIN WIN WIN", 0, 32, RED);
+    }
     /* Здесь (и только здесь) нужно вызывать функции game_draw_??? */
 }
 
 static void Saper_update(unsigned long delta)
 {
-	if(data->j>1000){
-		data->h=data->h+1;
-			data->j=0;
-	}
-	if(game_is_button_pressed (BUTTON_UP) && data->m<3 && data->y>0)
-  {
-	++data->m ;
-	if (data->m<3){
-		if (data->m>1){
---data->y;
-		}
-	}
+    if(data->j>1000){
+        data->h=data->h+1;
+        data->j=0;
+    }
+    if(game_is_button_pressed (BUTTON_UP) && data->m<3 && data->y>0)
+    {
+        ++data->m ;
+        if (data->m<3){
+            if (data->m>1){
+                --data->y;
+            }
+        }
 
 
-  }
-  if(game_is_button_pressed (BUTTON_DOWN) && data->n<3 && data->y<9)
-  {
-	  ++data->n;
-	  if(data->n<3){
-		  if (data->n>1){
-    ++data->y;
-	  }
-  }
-  }
-  if(game_is_button_pressed (BUTTON_LEFT) && data->b<3 && data->x>0)
-  {++data->b;
-	  if (data->b<3)
-	  if(data->b>1){
-		  
-    --data->x;
-	  }
-  }
-if(game_is_button_pressed (BUTTON_RIGHT) && data->v<3 && data->x<9)
-{++data->v;
-if(data->v==2){
-	  
-    ++data->x;
-	  }
-  }
+    }
+    if(game_is_button_pressed (BUTTON_DOWN) && data->n<3 && data->y<9)
+    {
+        ++data->n;
+        if(data->n<3){
+            if (data->n>1){
+                ++data->y;
+            }
+        }
+    }
+    if(game_is_button_pressed (BUTTON_LEFT) && data->b<3 && data->x>0)
+    {++data->b;
+    if (data->b<3)
+        if(data->b>1){
 
-if(!game_is_button_pressed (BUTTON_UP) &&   data->m>0 )
-	  --data->m;
-if(!game_is_button_pressed (BUTTON_DOWN) &&   data->n>0 )
-	  --data->n;	
-if(!game_is_button_pressed (BUTTON_LEFT) &&   data->b>0 )
-	  --data->b;
-if(!game_is_button_pressed (BUTTON_RIGHT) &&   data->v>0 )
-	  --data->v;
-if(game_is_button_pressed (BUTTON_START) &&   data->t[data->y][data->x]>9 && data->gv!=1)
-if(data->t[data->y][data->x]!=19){
-	data->t[data->y][data->x]=data->t[data->y][data->x]-10;
-}else
-{data->gv=1;
+            --data->x;
+        }
+    }
+    if(game_is_button_pressed (BUTTON_RIGHT) && data->v<3 && data->x<9)
+    {++data->v;
+    if(data->v==2){
 
-}
+        ++data->x;
+    }
+    }
 
-if(game_is_button_pressed (BUTTON_SELECT) )
-{/*9320939432483298493249832948392432492839432949349824343248380934289348934280923423*/
-	data->gv=0;
-data->h=0;
-for (int a=0 ;a<=10;a++ )
-for (int i=0 ;i<=10;i++ )
-data->t[a][i]=10;
+    if(!game_is_button_pressed (BUTTON_UP) &&   data->m>0 )
+        --data->m;
+    if(!game_is_button_pressed (BUTTON_DOWN) &&   data->n>0 )
+        --data->n;	
+    if(!game_is_button_pressed (BUTTON_LEFT) &&   data->b>0 )
+        --data->b;
+    if(!game_is_button_pressed (BUTTON_RIGHT) &&   data->v>0 )
+        --data->v;
+    if(game_is_button_pressed (BUTTON_START) &&   data->t[data->y][data->x]>9 && data->gv!=1 && data->io<90)
+        if(data->t[data->y][data->x]!=19){
+            data->io=data->io+1;
+            data->t[data->y][data->x]=data->t[data->y][data->x]-10;
+        }else
+        {data->gv=1;
 
+        }
 
-
-for (int a=1;a<9;a++)
-{
-data->mn=rand()%10;
-data->t[a][data->mn]=19;
-if (data->t[a][data->mn+1]!=19){
-data->t[a][data->mn+1]=data->t[a][data->mn+1]+1;
-}
-if (data->t[a][data->mn-1]!=19){
-data->t[a][data->mn-1]=data->t[a][data->mn-1]+1;
-}
-if (data->t[a+1][data->mn]!=19){
-data->t[a+1][data->mn]=data->t[a+1][data->mn]+1;
-}
-if (data->t[a-1][data->mn]!=19){
-data->t[a-1][data->mn]=data->t[a-1][data->mn]+1;
-}
-/*308019283129830912*/
-if (data->t[a+1][data->mn+1]!=19){
-data->t[a+1][data->mn+1]=data->t[a+1][data->mn+1]+1;
-}
-if (data->t[a+1][data->mn-1]!=19){
-data->t[a+1][data->mn-1]=data->t[a+1][data->mn-1]+1;
-}
-if (data->t[a-1][data->mn+1]!=19){
-data->t[a-1][data->mn+1]=data->t[a-1][data->mn+1]+1;
-}
-if (data->t[a-1][data->mn-1]!=19){
-data->t[a-1][data->mn-1]=data->t[a-1][data->mn-1]+1;
-}
-/*3420932840932*/
-
-
-
-
-
-
-
-
-
-}
-
-}
-  /* Здесь код, который будет выполняться в цикле */
-    /* Переменная delta содержит количество миллисекунд с последнего вызова */
-if(data->gv==0){
-	data->j=data->j+delta;
-}
-    /* Здесь можно работать с кнопками и обновлять переменные */
+        if(game_is_button_pressed (BUTTON_SELECT) )
+        {/*9320939432483298493249832948392432492839432949349824343248380934289348934280923423*/
+            Saper_prepare();
+        }
+        /* Здесь код, который будет выполняться в цикле */
+        /* Переменная delta содержит количество миллисекунд с последнего вызова */
+        if(data->gv==0 ){
+            data->j=data->j+delta;
+        }
+        /* Здесь можно работать с кнопками и обновлять переменные */
 }
 
 game_instance Saper = {
