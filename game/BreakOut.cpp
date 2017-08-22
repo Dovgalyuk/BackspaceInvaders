@@ -1,27 +1,13 @@
 #pragma GCC optimize ("-O3")
-
+#include <stdint.h>
+#include "storage.h"
 #include "libgame.h"
 #include "graphics.h"
 #include "binary.h"
 //#include "Arduino.h"
 #include <stdlib.h>
 #include "controls.h"
-//изменить управление!!!!!!!!!!!!!
-/* Встроенные цвета:
- *
- *  BLACK - Чёрный
- *  BLUE - Синий
- *  GREEN - Зелёный
- *  RED - Красный
- *  CYAN - Циановый
- *  PURPLE - Фиолетовый
- *  YELLOW - Коричневый
- *  WHITE - Белый
- *
- *  Для использования 64-х цветной палитры, укажите в game.ino COLOR_6BIT = 1
- * 
- * */
-
+#include "iostream"
 /* Кнопки:
  *
  * НА КОРПУСЕ:
@@ -82,13 +68,13 @@ struct BreakOutData
 		flag, k, ballX, 
 		ballY, speedy, i,
 		speedx, lvlcount;
+	bool IsBot;
     
 };
 static BreakOutData* data;
 
 static void BreakOut_prepare()
 {
-
 	game_set_ups(10);
 	data->lvlcount = 0;
 	data->i  = 65;
@@ -98,28 +84,28 @@ static void BreakOut_prepare()
 	if(rand() % 2) data->speedy = 1;
 	else data->speedy = -1;
 	data->Board1Y = data->Board2Y  = 26;
-	
-	 
+	data->IsBot = false;
+	int i = 0;
+	while(i++ < 100000){
+		 if(game_is_button_pressed(BUTTON_NW))
+			 data->IsBot = true;
+		 else if(game_is_button_pressed(BUTTON_SW))
+			 data->IsBot = false;
+	}
 }
 
 static void BreakOut_render()
-{	
-	if( (data->ballX > 64) || 
-		(data->ballX < 0))
+{	if( (data->ballX > 61) || 
+		(data->ballX < 3))
 	{
-		if(data->ballX > 64)
+		if(data->ballX > 61)
 		{
 			game_draw_text((const unsigned char*)"P2 WINS",12,18,GREEN);
-			if(game_is_button_pressed(BUTTON_START))
-			BreakOut_prepare();
 		}
 		else{
 			game_draw_text((const unsigned char*)"P1 WINS",12,18,BLUE);
-			if(game_is_button_pressed(BUTTON_START))
-			BreakOut_prepare();
 		}
 	}
-
     game_draw_sprite(&Board,0,data->Board2Y,GREEN);
     game_draw_sprite(&Ball,data->ballX,data->ballY,RED);
 	game_draw_sprite(&Board,61,data->Board1Y,BLUE);
@@ -150,22 +136,34 @@ static void BreakOut_render()
 	}
 
 	if(data->lvlcount == 41) game_draw_text((uint8_t*)"SUICIDE", 12, 26, PURPLE);
-	if(data->lvlcount > 40 && (data->lvlcount % 4 == 0)) { 
-		data->i++;
-		game_set_ups(data->i);
-		
-	}
+	
 		
 }
 
 static void BreakOut_update(unsigned long delta)
 {
+	std::cout << data->ballX << ' '<< data->ballY << ' ' << data->Board1Y << ' ' << data->Board2Y << ' ' << endl;
+	if( (data->ballX > 61) || 
+		(data->ballX < 3))
+	{
+		game_set_ups(2);
+		if(data->ballX > 61)
+		{
+			if(game_is_button_pressed(BUTTON_START))
+			BreakOut_prepare();
+		}
+		else{
+			if(game_is_button_pressed(BUTTON_START))
+			BreakOut_prepare();
+		}
+	}
+		 
     if(game_is_button_pressed(BUTTON_DOWN) && data->Board1Y < 52)
 		data->Board1Y = (data->Board1Y + 1);
 
     if(game_is_button_pressed(BUTTON_UP) && data->Board1Y > 0)
 		data->Board1Y = (data->Board1Y - 1);
-	if(true){
+	if(data->IsBot){
 	if(game_is_button_pressed(BUTTON_A) && data->Board2Y < 52)
 		data->Board2Y = (data->Board2Y + 1);
 
@@ -179,6 +177,7 @@ static void BreakOut_update(unsigned long delta)
 		(data->ballY <= data->Board1Y + 16) && 
 			(data->ballX == 57)) 
 	{
+		std::cout << "BOUNCE";
 		data->speedx = -data->speedx;
 		data->lvlcount++;
 	}
@@ -186,7 +185,7 @@ static void BreakOut_update(unsigned long delta)
 	if((data->ballY >= data->Board2Y - 6) && 
 		(data->ballY <= data->Board2Y + 16) && 
 			( data->ballX == 3) ) {
-
+		std::cout << "BOUNCE";
 		  data->speedx = -data->speedx;
 		  data->lvlcount++;
 	  }
@@ -196,6 +195,12 @@ static void BreakOut_update(unsigned long delta)
 
       data->ballX += data->speedx;
       data->ballY += data->speedy;
+
+	  if(data->lvlcount > 40 && (data->lvlcount % 4 == 0)) { 
+		data->i++;
+		game_set_ups(data->i);
+		
+	}
 
 }
 game_instance BreakOut = {

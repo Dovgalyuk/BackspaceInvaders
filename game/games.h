@@ -18,11 +18,11 @@ extern game_instance Dump;
 
 #ifdef _OUTPUT_INSTANCES
 game_instance instances[] = {
+	BreakOut,
     BackspaceInvaders,
     Snake,
     Raycaster,
     Tester,
-	BreakOut,
 #ifndef EMULATED /* for use only on real hardware */
     Dump,
 #endif
