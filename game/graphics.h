@@ -42,6 +42,8 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color); // char is drawn wi
 void game_draw_sprite(const struct game_sprite *s, int x, int y, uint8_t color);
 void game_draw_digits(uint16_t num, int len, int x, int y, uint8_t color);
 
+bool game_is_drawing_lines(int y, int height);
+
 // Internal functions
 // Called only by libgame
 

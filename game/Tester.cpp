@@ -39,18 +39,22 @@ unsigned char to_hex(uint8_t n)
 void Tester_render()
 {
     int i = 0;
-    for (unsigned char c = data->symb; i < PER_PAGE; ++c)
+    unsigned char c = data->symb;
+    for (int y = 0 ; y < ROWS * (FONT_HEIGHT + 1) ; y += FONT_HEIGHT + 1)
     {
-        int x = (i % COLS + 2) * (FONT_WIDTH + 1);
-        int y = (i / COLS) * (FONT_HEIGHT + 1);
-        game_draw_char(c, x, y, WHITE);
-        i++;
-    }
-    for (uint8_t l = 0; l < ROWS; ++l)
-    {
-        unsigned char first = data->symb + COLS * l;
-        game_draw_char(to_hex(first >> 4), 0, l * (FONT_HEIGHT + 1), RED);
-        game_draw_char(to_hex(first & 0xf), FONT_WIDTH + 1, l * (FONT_HEIGHT + 1), RED);
+        if (game_is_drawing_lines(y, FONT_HEIGHT))
+        {
+            game_draw_char(to_hex(c >> 4), 0, y, RED);
+            game_draw_char(to_hex(c & 0xf), FONT_WIDTH + 1, y, RED);
+            for (int x = 0 ; x < COLS * (FONT_WIDTH + 1) ; x += FONT_WIDTH + 1, ++c)
+            {
+               game_draw_char(c, x + 2 * (FONT_WIDTH + 1), y, WHITE);
+            }
+        }
+        else
+        {
+            c += COLS;
+        }
     }
 }
 
