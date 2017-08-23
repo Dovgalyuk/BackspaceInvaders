@@ -192,6 +192,7 @@ static void Saper_prepare()
 {
     data->gv=0;
     data->h=0;
+    data->io=0;
     /* Здесь код, который будет исполнятся один раз */
     /* Здесь нужно инициализировать переменные */
     /*9320939432483298493249832948392432492839432949349824343248380934289348934280923423*/
@@ -258,28 +259,35 @@ static void Saper_render()
     sprintf(s, "%d", data->h);
     game_draw_text((uint8_t*)s, 43, 7, RED);
 
-    sprintf(s, "%d", data->bb);
-    game_draw_text((uint8_t*)s, 4, 7, RED);
+    
 
     if(data->gv==1){
         game_draw_text((const uint8_t*)"GAME OVER", 0, 32, RED);
 
     }
 
-    if(data->io>90)
-    {
-        if(data->bb>data->h){
-        data->bb=data->h;
+   sprintf(s, "%d", data->bb);
+    game_draw_text((uint8_t*)s, 4, 7, RED);
 
-    }
-    game_draw_text((const uint8_t*)"WIN WIN WIN", 0, 32, RED);
+    if(data->gv<0){
+    game_draw_text((const uint8_t*)"WIN!!!", 15, 32, RED);
     }
     /* Здесь (и только здесь) нужно вызывать функции game_draw_??? */
 }
 
 static void Saper_update(unsigned long delta)
 {
-    if(data->j>1000){
+
+ if(data->io>91 && data->gv>-2)
+    {
+        --data->gv;
+    }
+if(data->bb<data->h && data->gv==-1){
+        data->bb=data->h;
+
+
+    }
+    if(data->j>300){
         data->h=data->h+1;
         data->j=0;
     }
@@ -327,7 +335,7 @@ static void Saper_update(unsigned long delta)
         --data->b;
     if(!game_is_button_pressed (BUTTON_RIGHT) &&   data->v>0 )
         --data->v;
-    if(game_is_button_pressed (BUTTON_START) &&   data->t[data->y][data->x]>9 && data->gv!=1 && data->io<91)
+    if(game_is_button_pressed (BUTTON_START) &&   data->t[data->y][data->x]>9 && data->gv!=1 && data->io<92)
         if(data->t[data->y][data->x]!=19){
             data->io=data->io+1;
             data->t[data->y][data->x]=data->t[data->y][data->x]-10;
@@ -339,6 +347,7 @@ static void Saper_update(unsigned long delta)
         if(game_is_button_pressed (BUTTON_SELECT) )
         {/*9320939432483298493249832948392432492839432949349824343248380934289348934280923423*/
             Saper_prepare();
+            
         }
         /* Здесь код, который будет выполняться в цикле */
         /* Переменная delta содержит количество миллисекунд с последнего вызова */
