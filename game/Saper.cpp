@@ -327,7 +327,7 @@ static void Saper_update(unsigned long delta)
         --data->b;
     if(!game_is_button_pressed (BUTTON_RIGHT) &&   data->v>0 )
         --data->v;
-    if(game_is_button_pressed (BUTTON_START) &&   data->t[data->y][data->x]>9 && data->gv!=1 && data->io<90)
+    if(game_is_button_pressed (BUTTON_START) &&   data->t[data->y][data->x]>9 && data->gv!=1 && data->io<91)
         if(data->t[data->y][data->x]!=19){
             data->io=data->io+1;
             data->t[data->y][data->x]=data->t[data->y][data->x]-10;
