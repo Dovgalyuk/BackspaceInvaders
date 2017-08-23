@@ -238,12 +238,15 @@ static void Saper_render()
     /* Здесь код, который будет вывзваться для отрисовки кадра */
     /* Он не должен менять состояние игры, для этого есть функция update */
     for (int a=0 ;a<10;a++ )
-        for (int i=0 ;i<10;i++ )
+        if (game_is_drawing_lines(14 + a * 5, 5))
         {
-            static const game_sprite *spr[20] = {NULL,&bl2,&bl3,&bl4,NULL,NULL,NULL,NULL,NULL,&bl1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1};
-            static const uint8_t col[20] = {BLACK, BLUE, CYAN, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,RED, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN};
-            if (spr[data->t[a][i]])
-                game_draw_sprite(spr[data->t[a][i]], 14+i*5, 14+a*5, col[data->t[a][i]]);
+            for (int i=0 ;i<10;i++ )
+            {
+                static const game_sprite *spr[20] = {NULL,&bl2,&bl3,&bl4,NULL,NULL,NULL,NULL,NULL,&bl1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1};
+                static const uint8_t col[20] = {BLACK, BLUE, CYAN, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,RED, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN};
+                if (spr[data->t[a][i]])
+                    game_draw_sprite(spr[data->t[a][i]], 14+i*5, 14+a*5, col[data->t[a][i]]);
+            }
         }
 
 
