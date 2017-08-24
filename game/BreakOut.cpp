@@ -99,18 +99,33 @@ static void BreakOut_prepare() {
 }
 
 static void BreakOut_render() {
+     if(data->menu) {
+        game_draw_text((const unsigned char*)"survival-A",2,2,GREEN);
+        game_draw_text((const unsigned char*)"2player-B",6,12,GREEN);
+        for(int i = 0; i <= 64; i++)
+            game_draw_pixel(i,20,WHITE);
+        game_draw_text((const unsigned char*)"help:",16,22,BLUE);
+        for(int i = 0; i <= 64; i++)
+            game_draw_pixel(i,30,WHITE);
+        game_draw_text((const unsigned char*)"pause-",1,30,BLUE);
+        game_draw_text((const unsigned char*)"{select}",17,38,WHITE);
+        game_draw_text((const unsigned char*)"restart-",1,48,BLUE);
+        game_draw_text((const unsigned char*)"{start}",20,56,WHITE);
+        return;
+    }
     if(data->paused) {
         game_draw_sprite(&pausef,14,29,RED);
     }
-    if(data->menu) {
-        game_draw_text((const unsigned char*)"SURVIVAL-A",2,18,GREEN);
-        game_draw_text((const unsigned char*)"PvP-B",18,36,GREEN);
-        return;
-    }
+
     
     if( (data->ballX > 57) || (data->ballX < 3)) {
         if(data->ballX > 57)
+            if(!data->IsBot)
             game_draw_text((const unsigned char*)"P2 WINS",12,18,GREEN);
+            else {
+            game_draw_text((const unsigned char*)"BOT WINS.",6,18,GREEN);
+            game_draw_text((const unsigned char*)"AGAIN.",6,28,GREEN);
+            }
         else
             game_draw_text((const unsigned char*)"P1 WINS",12,18,BLUE);
     }
@@ -154,6 +169,7 @@ static void BreakOut_render() {
 static void BreakOut_update(unsigned long delta) {
     if (game_is_button_pressed(BUTTON_SELECT)) {
         data->paused = !data->paused;
+        return;
     }
     if(data->paused) {
         return;
@@ -170,16 +186,18 @@ static void BreakOut_update(unsigned long delta) {
         }
         return;
     } 
-    if (game_is_any_button_pressed(BITMASK(BUTTON_LEFT) | BITMASK(BUTTON_RIGHT)))
+    if (game_is_button_pressed(BUTTON_SELECT))
     {
         data->paused = !data->paused;
+        for(int i = 0; i < 1000;i++);
+        return;
     }
-    std::cout << data->ballX << ' '<< data->ballY << ' ' << data->Board1Y << ' ' << data->Board2Y << ' ' << endl;
-    if( (data->ballX > 58) || 
+ 
+    if( (data->ballX > 60) || 
         (data->ballX < 3))
     {
         game_set_ups(2);
-        if(data->ballX > 58)
+        if(data->ballX > 60)
         {
             if(game_is_button_pressed(BUTTON_START))
                 BreakOut_prepare();
