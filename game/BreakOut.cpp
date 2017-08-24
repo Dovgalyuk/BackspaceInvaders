@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "controls.h"
 #include "iostream"
+const int colors[5] = {BLUE, RED, GREEN, PURPLE, YELLOW};
 
 const uint8_t pauseLines[] PROGMEM = {
     B01111000,B11100100,B01001111,B01111101,B11100000,
@@ -114,7 +115,7 @@ static void BreakOut_render() {
         return;
     }
     if(data->paused) {
-        game_draw_sprite(&pausef,14,29,RED);
+        game_draw_sprite(&pausef,14,29,colors[rand() % 5]);
     }
 
     
@@ -158,7 +159,7 @@ static void BreakOut_render() {
         break;
 
     case 50:
-        game_draw_text((uint8_t*)"SUICIDE", 12, 26, data->i);
+        game_draw_text((uint8_t*)"SUICIDE", 12, 26, colors[rand() % 5]);
         game_set_ups(73);
         break;
 
@@ -230,7 +231,6 @@ static void BreakOut_update(unsigned long delta) {
         (data->ballY <= data->Board1Y + 15) && 
         (data->ballX == 57)) 
     {
-        std::cout << "BOUNCE";
         data->speedx = -data->speedx;
          data->lvlcount++;
     }
@@ -238,7 +238,6 @@ static void BreakOut_update(unsigned long delta) {
     if((data->ballY >= data->Board2Y - 3) && 
         (data->ballY <= data->Board2Y + 15) && 
         ( data->ballX == 3) ) {
-            std::cout << "BOUNCE";
             data->speedx = -data->speedx;
            
     }
@@ -249,12 +248,6 @@ static void BreakOut_update(unsigned long delta) {
     if(data->ballX < 64 && data->ballX > -4){
         data->ballX += data->speedx;
         data->ballY += data->speedy;
-    }
-
-    if(data->lvlcount > 40 && (data->lvlcount % 4 == 0)) { 
-        data->i++;
-        game_set_ups(data->i);
-
     }
     data->i = data->i == 0 ? 48 : 0;
 }
