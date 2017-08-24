@@ -185,6 +185,22 @@ void game_draw_vline(int x, int y1, int y2, uint8_t color)
     }
 }
 
+bool game_is_drawing_lines(int y, int height)
+{
+#ifdef FRAME_BUFFER
+    if (use_frame_buffer)
+    {
+        return true;
+    }
+#endif
+    for (uint8_t yy = game_render_y ; yy < HEIGHT ; yy += ADDR_LOW + 1)
+    {
+        if (yy >= y && yy < y + height)
+            return true;
+    }
+    return false;
+}
+
 void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
 #ifdef FRAME_BUFFER
@@ -255,14 +271,14 @@ void game_draw_digits(uint16_t num, int len, int x, int y, uint8_t color)
 #ifdef FRAME_BUFFER
         if (use_frame_buffer)
         {
-            for (int8_t dy = 0 ; dy < FONT_HEIGHT ; ++dy)
+            for (int8_t dy = 0 ; dy < DIGIT_HEIGHT ; ++dy)
             {
                 if (y + dy >= 0 && y + dy < HEIGHT)
                 {
                     uint8_t dd = pgm_read_byte_near(digits_data + d * DIGIT_HEIGHT + dy);
                     for (int b = 0 ; b < DIGIT_WIDTH ; ++b)
                     {
-                        if ((dd >> (FONT_WIDTH - 1 - b)) & 1)
+                        if ((dd >> (DIGIT_WIDTH - 1 - b)) & 1)
                         {
                             if (x + b >= 0 && x + b < WIDTH)
                                 frame[y + dy][x + b] = game_make_color(color);
