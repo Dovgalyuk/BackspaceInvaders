@@ -101,17 +101,15 @@ static void BreakOut_prepare() {
 
 static void BreakOut_render() {
      if(data->menu) {
-        game_draw_text((const unsigned char*)"survival-A",2,2,GREEN);
-        game_draw_text((const unsigned char*)"2player-B",6,12,GREEN);
+        game_draw_text((const unsigned char*)"SURVIVAL-A",2,2,GREEN);
+        game_draw_text((const unsigned char*)"2PLAYER-B",6,12,GREEN);
         for(int i = 0; i <= 64; i++)
-            game_draw_pixel(i,20,WHITE);
-        game_draw_text((const unsigned char*)"help:",16,22,BLUE);
+            game_draw_pixel(i,20,colors[rand()%5]);
+        game_draw_text((const unsigned char*)"HELP:",16,22,BLUE);
         for(int i = 0; i <= 64; i++)
-            game_draw_pixel(i,30,WHITE);
-        game_draw_text((const unsigned char*)"pause-",1,30,BLUE);
-        game_draw_text((const unsigned char*)"{select}",17,38,WHITE);
-        game_draw_text((const unsigned char*)"restart-",1,48,BLUE);
-        game_draw_text((const unsigned char*)"{start}",20,56,WHITE);
+            game_draw_pixel(i,30,colors[rand()%5]);
+        game_draw_text((const unsigned char*)"PAUSE-",1,32,BLUE);
+        game_draw_text((const unsigned char*)"{SELECT}",17,41,WHITE);
         return;
     }
     if(data->paused) {
@@ -129,6 +127,8 @@ static void BreakOut_render() {
             }
         else
             game_draw_text((const unsigned char*)"P1 WINS",12,18,BLUE);
+        game_draw_text((const unsigned char*)"RESTART-",6,48,BLUE);
+        game_draw_text((const unsigned char*)"{START}",16,56,WHITE);
     }
    
     game_draw_sprite(&Board,0,data->Board2Y,GREEN);
@@ -139,7 +139,7 @@ static void BreakOut_render() {
         game_draw_digits(data->lvlcount, 3, 16, 0, WHITE);
     switch(data->lvlcount){
     case 2:
-        game_draw_text((uint8_t*)"GO GO", 18, 26, WHITE);
+        game_draw_text((uint8_t*)"GO GO", 18, 26, colors[rand()%5]);
         game_set_ups(25);
         break;
 
@@ -160,7 +160,7 @@ static void BreakOut_render() {
 
     case 50:
         game_draw_text((uint8_t*)"SUICIDE", 12, 26, colors[rand() % 5]);
-        game_set_ups(73);
+        game_set_ups(1200);
         break;
 
     }
