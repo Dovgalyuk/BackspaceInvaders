@@ -84,7 +84,7 @@ static void BreakOut_prepare() {
     data->bonusx = 24;
     data->bonusy = -4;
     data->Board1Lenght = data->Board2Lenght = 12;
-    data->lvlcount = 0;
+    data->lvlcount = 49;
     data->i  = 65;
     data->ballX = data->ballY = 30;
     data->Board1Y = data->Board2Y  = 26;
@@ -135,8 +135,10 @@ static void BreakOut_render() {
     game_draw_sprite(&Ball,data->ballX,data->ballY,RED);
     game_draw_sprite(&Board,61,data->Board1Y,BLUE);
 
-    if(data->IsBot)
-        game_draw_digits(data->lvlcount, 3, 16, 0, WHITE);
+    if(data->IsBot){
+        game_draw_text((const unsigned char*)"SCORE:",2,0,WHITE);
+        game_draw_digits(data->lvlcount, 3, 34, 0, WHITE);
+    }
     switch(data->lvlcount){
     case 2:
         game_draw_text((uint8_t*)"GO GO", 18, 26, colors[rand()%5]);
@@ -160,7 +162,7 @@ static void BreakOut_render() {
 
     case 50:
         game_draw_text((uint8_t*)"SUICIDE", 12, 26, colors[rand() % 5]);
-        game_set_ups(1200);
+        game_set_ups(73);
         break;
 
     }
