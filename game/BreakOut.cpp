@@ -38,12 +38,7 @@ const uint8_t BoardData[] PROGMEM = {
 const game_sprite Board PROGMEM = {
     3, 12, 1, BoardData
 };
-const game_sprite BoardMin PROGMEM = {
-    3, 8, 1, BoardData
-};
-const game_sprite BoardMax PROGMEM = {
-    3, 16, 1, BoardData
-};
+
 const uint8_t BallData[] PROGMEM = {
     B01100000,  
     B11110000, 
@@ -66,34 +61,29 @@ struct BreakOutData {
     short int Board1Y, Board2Y, k, 
         ballX, ballY, 
         speedy, speedx, 
-        bonusx, bonusy,
         i, lvlcount, 
         Board1Lenght, Board2Lenght, paused;
 
-    bool IsBot, menu, Bcatch, flag, isTest;
-    int time;
-    
+    bool IsBot, menu, isTest;    
 };
 static BreakOutData* data;
 
 static void BreakOut_prepare() {
 
     game_set_ups(10);
-    data->bonusx = 24;
-    data->bonusy = -4;
     data->Board1Lenght = data->Board2Lenght = 12;
     data->lvlcount = 0;
     data->i  = 65;
     data->ballX = data->ballY = 30;
     data->Board1Y = data->Board2Y  = 26;
-    data->IsBot = true;
+    data->IsBot = false;
+    data->isTest = false;
     data->menu = true;
-    data->time = 1;
     if(rand() % 2) data->speedx = 1;
     else data->speedx = -1;
     if(rand() % 2) data->speedy = 1;
     else data->speedy = -1;
-    data->isTest = false;
+    
 
 
 }
@@ -182,7 +172,8 @@ static void BreakOut_update(unsigned long delta) {
     if(data->paused) {
         if(game_is_button_pressed(BUTTON_START)){
             for(int i = 0;i < 1000; i += delta);
-            BreakOut_prepare();
+                data->paused = false;
+                BreakOut_prepare();
         }
         return;
     }
@@ -198,6 +189,7 @@ static void BreakOut_update(unsigned long delta) {
         }
         if(game_is_button_pressed(BUTTON_LEFT))
         {
+            data->IsBot = true;
             data->isTest = true;
             data->menu = false;
         }
