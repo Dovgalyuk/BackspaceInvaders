@@ -182,16 +182,18 @@ static void BreakOut_update(unsigned long delta) {
         return;
     }
     if(data->paused) {
-        if(game_is_button_pressed(BUTTON_START))
+        if(game_is_button_pressed(BUTTON_START)){
+            for(int i = 0;i < 1000; i += delta);
             BreakOut_prepare();
+        }
         return;
     }
     if(data->menu) {
-        if(game_is_button_pressed(BUTTON_A)){
+        if(game_is_button_pressed(BUTTON_B)){
             data->IsBot = true;
             data->menu = false;
         }
-        if(game_is_button_pressed(BUTTON_B))
+        if(game_is_button_pressed(BUTTON_A))
         {
             data->IsBot = false;
             data->menu = false;
@@ -206,7 +208,7 @@ static void BreakOut_update(unsigned long delta) {
     if (game_is_button_pressed(BUTTON_SELECT))
     {
         data->paused = !data->paused;
-        for(int i = 0; i < 1000;i++);
+        for(int i = 0;i < 1000; i += delta);
         return;
     }
  
