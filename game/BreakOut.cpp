@@ -7,8 +7,6 @@
 //#include "Arduino.h"
 #include <stdlib.h>
 #include "controls.h"
-#include "iostream"
-const int colors[5] = {BLUE, RED, GREEN, PURPLE, YELLOW};
 
 const uint8_t pauseLines[] PROGMEM = {
     B01111000,B11100100,B01001111,B01111101,B11100000,
@@ -106,10 +104,10 @@ static void BreakOut_render() {
         game_draw_text((const unsigned char*)"2PLAYER-B",6,12,GREEN);
         game_draw_text((const unsigned char*)"TEST-LEFT",6,22,GREEN);
         for(int i = 0; i <= 64; i++)
-            game_draw_pixel(i,30,colors[rand()%5]);
+            game_draw_pixel(i,30,WHITE);
         game_draw_text((const unsigned char*)"HELP:",16,32,BLUE);
         for(int i = 0; i <= 64; i++)
-            game_draw_pixel(i,40,colors[rand()%5]);
+            game_draw_pixel(i,40,WHITE);
         game_draw_text((const unsigned char*)"PAUSE-",1,42,BLUE);
         game_draw_text((const unsigned char*)"{SELECT}",17,51,WHITE);
 
@@ -142,7 +140,7 @@ static void BreakOut_render() {
     }
     switch(data->lvlcount){
     case 2:
-        game_draw_text((uint8_t*)"GO GO", 18, 26, colors[rand()%5]);
+        game_draw_text((uint8_t*)"GO GO", 18, 26, WHITE);
         game_set_ups(25);
         break;
 
