@@ -172,7 +172,7 @@ struct SaperData
     char q;
 	int j,h;
 	int gv;
-    int io,bb,mb,ll[1000][2],mm,kkk,qwe;
+    int io,bb,mb,mm,kkk,qwe;
 };
 static SaperData* data; /* Эта переменная - указатель на структуру, которая содержит ваши переменные */
 
