@@ -185,6 +185,22 @@ void game_draw_vline(int x, int y1, int y2, uint8_t color)
     }
 }
 
+bool game_is_drawing_lines(int y, int height)
+{
+#ifdef FRAME_BUFFER
+    if (use_frame_buffer)
+    {
+        return true;
+    }
+#endif
+    for (uint8_t yy = game_render_y ; yy < HEIGHT ; yy += ADDR_LOW + 1)
+    {
+        if (yy >= y && yy < y + height)
+            return true;
+    }
+    return false;
+}
+
 void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
 {
 #ifdef FRAME_BUFFER

@@ -41,20 +41,25 @@ static unsigned char to_hex(uint8_t n)
 void Dump_render()
 {
     int i = 0;
-    for (uint16_t addr = data->addr ; i < PER_PAGE ; ++addr, ++i)
+    uint16_t addr = data->addr;
+    for (int y = 0 ; y < ROWS * (FONT_HEIGHT + 1) ; y += FONT_HEIGHT + 1)
     {
-        int x = (i % COLS) * 2 * (FONT_WIDTH + 1) + 3 * FONT_WIDTH + 1;
-        int y = (i / COLS) * (FONT_HEIGHT + 1);
-        uint8_t c = eeprom_read_byte((uint8_t*)addr);
-        game_draw_char(to_hex(c >> 4), x, y, WHITE);
-        game_draw_char(to_hex(c & 0xf), x + FONT_WIDTH + 1, y, WHITE);
-    }
-    for (uint8_t l = 0; l < ROWS; ++l)
-    {
-        uint16_t first = data->addr + COLS * l;
-        game_draw_char(to_hex(first >> 8), 0, l * (FONT_HEIGHT + 1), RED);
-        game_draw_char(to_hex((first >> 4) & 0xf), FONT_WIDTH, l * (FONT_HEIGHT + 1), RED);
-        game_draw_char(to_hex(first & 0xf), 2 * FONT_WIDTH, l * (FONT_HEIGHT + 1), RED);
+        if (game_is_drawing_lines(y, FONT_HEIGHT))
+        {
+            game_draw_char(to_hex(addr >> 8), 0, y, RED);
+            game_draw_char(to_hex((addr >> 4) & 0xf), FONT_WIDTH, y, RED);
+            game_draw_char(to_hex(addr & 0xf), 2 * FONT_WIDTH, y, RED);
+            for (int x = 0 ; x < COLS * 2 * (FONT_WIDTH + 1) ; x += (FONT_WIDTH + 1) * 2, ++addr)
+            {
+                uint8_t c = eeprom_read_byte((uint8_t*)addr);
+                game_draw_char(to_hex(c >> 4), 3 * FONT_WIDTH + 1 + x, y, WHITE);
+                game_draw_char(to_hex(c & 0xf), 3 * FONT_WIDTH + 1 + x + FONT_WIDTH + 1, y, WHITE);
+            }
+        }
+        else
+        {
+            addr += COLS;
+        }
     }
 }
 

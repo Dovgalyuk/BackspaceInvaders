@@ -4,6 +4,7 @@
 #include "storage.h"
 #include "graphics.h"
 #include "controls.h"
+#include "random.h"
 
 #define _OUTPUT_INSTANCES
 #include "games.h"
@@ -49,6 +50,7 @@ void update(unsigned long delta)
         if (game_is_any_button_pressed(SELECT)) btn_pressed = true;
         if (!game_is_any_button_pressed(SELECT) && btn_pressed)
         {
+            random_setup();
             // run game
             ptr = instances + sel;
             *(ptr->data) = memory;
