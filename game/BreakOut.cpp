@@ -72,9 +72,9 @@ struct BreakOutData {
         i, lvlcount, 
         Board1Lenght, Board2Lenght, paused;
 
-    bool IsBot, menu, Bcatch, flag;
+    bool IsBot, menu, Bcatch, flag, isTest;
     int time;
-
+    
 };
 static BreakOutData* data;
 
@@ -95,6 +95,7 @@ static void BreakOut_prepare() {
     else data->speedx = -1;
     if(rand() % 2) data->speedy = 1;
     else data->speedy = -1;
+    data->isTest = false;
 
 
 }
@@ -103,18 +104,18 @@ static void BreakOut_render() {
      if(data->menu) {
         game_draw_text((const unsigned char*)"SURVIVAL-A",2,2,GREEN);
         game_draw_text((const unsigned char*)"2PLAYER-B",6,12,GREEN);
-        for(int i = 0; i <= 64; i++)
-            game_draw_pixel(i,20,colors[rand()%5]);
-        game_draw_text((const unsigned char*)"HELP:",16,22,BLUE);
+        game_draw_text((const unsigned char*)"TEST-LEFT",6,22,GREEN);
         for(int i = 0; i <= 64; i++)
             game_draw_pixel(i,30,colors[rand()%5]);
-        game_draw_text((const unsigned char*)"PAUSE-",1,32,BLUE);
-        game_draw_text((const unsigned char*)"{SELECT}",17,41,WHITE);
+        game_draw_text((const unsigned char*)"HELP:",16,32,BLUE);
+        for(int i = 0; i <= 64; i++)
+            game_draw_pixel(i,40,colors[rand()%5]);
+        game_draw_text((const unsigned char*)"PAUSE-",1,42,BLUE);
+        game_draw_text((const unsigned char*)"{SELECT}",17,51,WHITE);
+
         return;
     }
-    if(data->paused) {
-        game_draw_sprite(&pausef,14,29,colors[rand() % 5]);
-    }
+
 
     
     if( (data->ballX > 57) || (data->ballX < 3)) {
@@ -166,15 +167,23 @@ static void BreakOut_render() {
         break;
 
     }
-    
+    if(data->paused) {
+        game_draw_sprite(&pausef,14,29,colors[rand() % 5]);
+        game_draw_text((const unsigned char*)"RESTART-",4,43,BLUE);
+        game_draw_text((const unsigned char*)"{START}",20,52,WHITE);
+    }
 }
 
 static void BreakOut_update(unsigned long delta) {
+    if(data->isTest)
+        game_set_ups(100);
     if (game_is_button_pressed(BUTTON_SELECT)) {
         data->paused = !data->paused;
         return;
     }
     if(data->paused) {
+        if(game_is_button_pressed(BUTTON_START))
+            BreakOut_prepare();
         return;
     }
     if(data->menu) {
@@ -185,6 +194,11 @@ static void BreakOut_update(unsigned long delta) {
         if(game_is_button_pressed(BUTTON_B))
         {
             data->IsBot = false;
+            data->menu = false;
+        }
+        if(game_is_button_pressed(BUTTON_LEFT))
+        {
+            data->isTest = true;
             data->menu = false;
         }
         return;
@@ -225,7 +239,8 @@ static void BreakOut_update(unsigned long delta) {
     }
     else if(data->ballY <= 52){
         data->Board2Y = data->ballY;
-
+        if(data->isTest)
+            data->Board1Y = data->ballY;
     } //&& data->time
         
 
