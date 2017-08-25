@@ -7,6 +7,7 @@ extern game_instance Snake;
 extern game_instance Flappy;
 extern game_instance Tester;
 extern game_instance Raycaster;
+extern game_instance BreakOut;
 extern game_instance Saper;
 #ifndef EMULATED /* for use only on real hardware */
 extern game_instance Dump;
@@ -22,9 +23,10 @@ game_instance instances[] = {
     BackspaceInvaders,
     Snake,
     Flappy,
+	BreakOut,
+	Saper,
     Raycaster,
     Tester,
-	Saper,
 #ifndef EMULATED /* for use only on real hardware */
     Dump,
 #endif
