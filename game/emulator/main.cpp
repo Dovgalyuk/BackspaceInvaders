@@ -205,6 +205,11 @@ void game_draw_digits(uint16_t num, int len, int x, int y, uint8_t color)
     }
 }
 
+bool game_is_drawing_lines(int y, int height)
+{
+    return true;
+}
+
 int main()
 {
     game_setup();
