@@ -84,7 +84,7 @@ static void BreakOut_prepare() {
     data->bonusx = 24;
     data->bonusy = -4;
     data->Board1Lenght = data->Board2Lenght = 12;
-    data->lvlcount = 49;
+    data->lvlcount = 0;
     data->i  = 65;
     data->ballX = data->ballY = 30;
     data->Board1Y = data->Board2Y  = 26;
