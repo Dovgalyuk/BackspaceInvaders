@@ -289,21 +289,7 @@ for (int a=0 ;a<10;a++ )
         }
         if (data->qwe==8 && data->gv>-2)
  --data->gv;
-/*if (data->t[data->ll[kkk,0]-1,data->ll[kkk,1]]==10)
-     {++data->mb;
-data->ll[mb,0]=data->ll[mb,0]-1;
-data->ll[mb,1]=data->ll[mb,1];
-     }
-if (data->t[data->ll[kkk,0]+1,data->ll[kkk,1]]==10)
-     {++data->mb;
-data->ll[mb,0]=data->ll[mb,0]+1;
-data->ll[mb,1]=data->ll[mb,1];
-     }
-if (t[data->ll[data->kkk,0],ll[kkk,1]+1]==10)
-     {++data->mb;
-data->ll[data->mb,0]=data->ll[data->mb,0];
-data->ll[data->mb,1]=data->ll[data->mb,1]+1;
-     }*/
+
      
     
     
@@ -368,15 +354,57 @@ if(data->bb<data->h && data->gv==-1){
         if(data->t[data->y][data->x]!=19){
             data->io=data->io+1;
             data->t[data->y][data->x]=data->t[data->y][data->x]-10;
+
+for (int thin=0;thin<100;thin++)
+            for (int a=0 ;a<10;a++ )
+        for (int i=0 ;i<10;i++ )
+        {
+if(a!=0)
+ if(data->t[a-1][i]==0)
+  if(data->t[a][i]>9)
+   data->t[a][i]=data->t[a][i]-10;
+
+if(a!=10)
+ if(data->t[a+1][i]==0)
+  if(data->t[a][i]>9)
+   data->t[a][i]=data->t[a][i]-10;
+
+if(i!=0)
+ if(data->t[a][i-1]==0)
+  if(data->t[a][i]>9)
+   data->t[a][i]=data->t[a][i]-10;
+
+if(i!=10)
+ if(data->t[a][i+1]==0)
+  if(data->t[a][i]>9)
+   data->t[a][i]=data->t[a][i]-10;
+
+if(a!=0)
+ if(i!=10)
+  if(data->t[a-1][i+1]==0)
+   if(data->t[a][i]>9)
+     data->t[a][i]=data->t[a][i]-10;
+
+if(a!=10)
+ if(i!=0)
+  if(data->t[a+1][i-1]==0)
+   if(data->t[a][i]>9)
+    data->t[a][i]=data->t[a][i]-10;
+
+if(i!=0)
+ if(a!=0)
+  if(data->t[a-1][i-1]==0)
+   if(data->t[a][i]>9)
+     data->t[a][i]=data->t[a][i]-10;
+
+if(i!=10)
+ if(a!=10)
+  if(data->t[a+1][i+1]==0)
+   if(data->t[a][i]>9)
+     data->t[a][i]=data->t[a][i]-10;
+        }
             
-            if(data->t[data->y][data->x]==10)
-            {
-               // data->mm=1;
-           
 
-
-
-            }
         }else
         {data->gv=1;
 
@@ -392,53 +420,54 @@ if(data->bb<data->h && data->gv==-1){
         if(data->gv==0 ){
             data->j=data->j+delta;
         }
-        if (game_is_button_pressed (BUTTON_START))
+       /* if (game_is_button_pressed (BUTTON_START))
  for (int a=0 ;a<10;a++ )
         for (int i=0 ;i<10;i++ )
         {
-if(data->t[a-1][i]==0)
-if(data->t[a][i]>9)
 if(a!=0)
-data->t[a][i]=data->t[a][i]-10;
+ if(data->t[a-1][i]==0)
+  if(data->t[a][i]>9)
+   data->t[a][i]=data->t[a][i]-10;
 
-if(data->t[a+1][i]==0)
-if(data->t[a][i]>9)
 if(a!=10)
-data->t[a][i]=data->t[a][i]-10;
+ if(data->t[a+1][i]==0)
+  if(data->t[a][i]>9)
+   data->t[a][i]=data->t[a][i]-10;
 
-if(data->t[a][i-1]==0)
-if(data->t[a][i]>9)
 if(i!=0)
-data->t[a][i]=data->t[a][i]-10;
+ if(data->t[a][i-1]==0)
+  if(data->t[a][i]>9)
+   data->t[a][i]=data->t[a][i]-10;
 
-if(data->t[a][i+1]==0)
-if(data->t[a][i]>9)
 if(i!=10)
-data->t[a][i]=data->t[a][i]-10;
-if(data->t[a-1][i+1]==0)
-if(data->t[a][i]>9)
+ if(data->t[a][i+1]==0)
+  if(data->t[a][i]>9)
+   data->t[a][i]=data->t[a][i]-10;
+
 if(a!=0)
-if(i!=10)
-data->t[a][i]=data->t[a][i]-10;
+ if(i!=10)
+  if(data->t[a-1][i+1]==0)
+   if(data->t[a][i]>9)
+     data->t[a][i]=data->t[a][i]-10;
 
-if(data->t[a+1][i-1]==0)
-if(data->t[a][i]>9)
 if(a!=10)
-if(i!=0)
-data->t[a][i]=data->t[a][i]-10;
+ if(i!=0)
+  if(data->t[a+1][i-1]==0)
+   if(data->t[a][i]>9)
+    data->t[a][i]=data->t[a][i]-10;
 
-if(data->t[a-1][i-1]==0)
-if(data->t[a][i]>9)
 if(i!=0)
-if(a!=0)
-data->t[a][i]=data->t[a][i]-10;
+ if(a!=0)
+  if(data->t[a-1][i-1]==0)
+   if(data->t[a][i]>9)
+     data->t[a][i]=data->t[a][i]-10;
 
-if(data->t[a+1][i+1]==0)
-if(data->t[a][i]>9)
 if(i!=10)
-if(a!=10)
-data->t[a][i]=data->t[a][i]-10;
-        }
+ if(a!=10)
+  if(data->t[a+1][i+1]==0)
+   if(data->t[a][i]>9)
+     data->t[a][i]=data->t[a][i]-10;
+        }*/
         /* Здесь можно работать с кнопками и обновлять переменные */
 }
 
