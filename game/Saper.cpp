@@ -77,18 +77,6 @@ const game_sprite YourSprite PROGMEM = {
 };
 
 */
-const uint8_t YourSprite_lines[] PROGMEM = {
-  B11000000,
-  B11000000,
-  B11000000,
-  B11000000,
-  B11110000,
-  B11110000
-};
-const game_sprite YourSprite PROGMEM = {
-    // ШИРИНА, ВЫСОТА, КОЛИЧЕСТВО БАЙТ НА СТРОКУ, ДАННЫЕ
-    4, 6, 1, YourSprite_lines
-};
 const uint8_t YourSprite1_lines[] PROGMEM = {
   B11111000,
   B11111000,
@@ -243,10 +231,10 @@ static void Saper_render()
         {
             for (int i=0 ;i<10;i++ )
             {
-                static const game_sprite *spr[20] = {NULL,&bl2,&bl3,&bl4,NULL,NULL,NULL,NULL,NULL,&bl1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1};
-                static const uint8_t col[20] = {BLACK, BLUE, CYAN, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,RED, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN};
+                static const game_sprite * const spr[20] PROGMEM = {NULL,&bl2,&bl3,&bl4,NULL,NULL,NULL,NULL,NULL,&bl1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1,&YourSprite1};
+                static const uint8_t col[20] PROGMEM = {BLACK, BLUE, CYAN, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,RED, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN, CYAN};
                 if (spr[data->t[a][i]])
-                    game_draw_sprite(spr[data->t[a][i]], 14+i*5, 14+a*5, col[data->t[a][i]]);
+                    game_draw_sprite((const game_sprite *)pgm_read_pointer(&spr[data->t[a][i]]), 14+i*5, 14+a*5, pgm_read_byte(&col[data->t[a][i]]));
             }
         }
 

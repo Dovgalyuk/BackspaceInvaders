@@ -28,7 +28,7 @@ game_instance instances[] = {
     Raycaster,
     Tester,
 #ifndef EMULATED /* for use only on real hardware */
-    Dump,
+//    Dump,
 #endif
 
     /* Register your game like so:
