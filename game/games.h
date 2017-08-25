@@ -4,9 +4,11 @@
 #include "libgame.h"
 extern game_instance BackspaceInvaders;
 extern game_instance Snake;
+extern game_instance Flappy;
 extern game_instance Tester;
 extern game_instance Raycaster;
 extern game_instance BreakOut;
+extern game_instance Saper;
 #ifndef EMULATED /* for use only on real hardware */
 extern game_instance Dump;
 #endif
@@ -18,9 +20,11 @@ extern game_instance Dump;
 
 #ifdef _OUTPUT_INSTANCES
 game_instance instances[] = {
-	BreakOut,
     BackspaceInvaders,
     Snake,
+    Flappy,
+	BreakOut,
+	Saper,
     Raycaster,
     Tester,
 #ifndef EMULATED /* for use only on real hardware */
