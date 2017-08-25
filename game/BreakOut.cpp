@@ -61,8 +61,7 @@ struct BreakOutData {
     short int Board1Y, Board2Y, k, 
         ballX, ballY, 
         speedy, speedx, 
-        i, lvlcount, 
-        Board1Lenght, Board2Lenght, paused;
+        i, lvlcount, paused;
 
     bool IsBot, menu, isTest;    
 };
@@ -71,7 +70,6 @@ static BreakOutData* data;
 static void BreakOut_prepare() {
 
     game_set_ups(10);
-    data->Board1Lenght = data->Board2Lenght = 12;
     data->lvlcount = 0;
     data->i  = 65;
     data->ballX = data->ballY = 30;
@@ -130,22 +128,22 @@ static void BreakOut_render() {
     }
     switch(data->lvlcount){
     case 2:
-        game_draw_text((uint8_t*)"GO GO", 18, 26, WHITE);
+        game_draw_text((uint8_t*)"GO GO", 14, 26, WHITE);
         game_set_ups(25);
         break;
 
     case 20:
-        game_draw_text((uint8_t*)"NORMA", 18, 26, GREEN);
+        game_draw_text((uint8_t*)"NORMA", 14, 26, GREEN);
         game_set_ups(37);
         break;
 
     case 30: //20
-        game_draw_text((uint8_t*)"HARD", 18, 26, YELLOW);
+        game_draw_text((uint8_t*)"HARD", 14, 26, YELLOW);
         game_set_ups(49);
         break;
 
     case 40:
-        game_draw_text((uint8_t*)"HARDCORE", 12, 26, RED);
+        game_draw_text((uint8_t*)"HARDCORE", 14, 26, RED);
         game_set_ups(61);
         break;
 
@@ -157,8 +155,8 @@ static void BreakOut_render() {
     }
     if(data->paused) {
         game_draw_sprite(&pausef,14,29,WHITE);
-        game_draw_text((const unsigned char*)"RESTART-",4,43,BLUE);
-        game_draw_text((const unsigned char*)"{START}",20,52,WHITE);
+        game_draw_text((const unsigned char*)"RESTART-",6,48,BLUE);
+        game_draw_text((const unsigned char*)"{START}",16,56,WHITE);
     }
 }
 
@@ -178,11 +176,11 @@ static void BreakOut_update(unsigned long delta) {
         return;
     }
     if(data->menu) {
-        if(game_is_button_pressed(BUTTON_B)){
+        if(game_is_button_pressed(BUTTON_A)){
             data->IsBot = true;
             data->menu = false;
         }
-        if(game_is_button_pressed(BUTTON_A))
+        if(game_is_button_pressed(BUTTON_B))
         {
             data->IsBot = false;
             data->menu = false;
@@ -233,7 +231,7 @@ static void BreakOut_update(unsigned long delta) {
         data->Board2Y = data->ballY;
         if(data->isTest)
             data->Board1Y = data->ballY;
-    } //&& data->time
+    }
         
 
     if((data->ballY >= data->Board1Y - 3) && 
@@ -258,7 +256,6 @@ static void BreakOut_update(unsigned long delta) {
         data->ballX += data->speedx;
         data->ballY += data->speedy;
     }
-    data->i = data->i == 0 ? 48 : 0;
 }
 game_instance BreakOut = {
     "BreakOut",
