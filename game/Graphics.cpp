@@ -207,7 +207,7 @@ void game_draw_text(const uint8_t *s, int x, int y, uint8_t color)
     if (!use_frame_buffer)
 #endif
     {
-        if (game_render_y < (y & ADDR_LOW) || game_render_y >= (y & ADDR_LOW) + FONT_HEIGHT)
+        if (!game_is_drawing_lines(y, FONT_HEIGHT))
             return;
     }
     for (const uint8_t *c = s; *c; ++c)
@@ -239,15 +239,19 @@ void game_draw_char(uint8_t c, int x, int y, uint8_t color)
         return;    
     }
 #endif
-    if (game_render_y < (y & ADDR_LOW) || game_render_y >= (y & ADDR_LOW) + FONT_HEIGHT)
-        return;
-    int pos = (int)c * FONT_HEIGHT + (game_render_y - (y & ADDR_LOW));
-    uint8_t d = pgm_read_byte_near(font_data + pos);
-    for (int i = 0; i < FONT_WIDTH; ++i)
+    
+    for (uint8_t s = 0, yy = game_render_y ; s < BUF_LINES ; ++s, yy += ADDR_LOW + 1)
     {
-        if ((d >> (FONT_WIDTH - 1 - i)) & 1)
+        if (yy < y || yy >= y + FONT_HEIGHT)
+            continue;
+        int pos = (int)c * FONT_HEIGHT + yy - y;
+        uint8_t d = pgm_read_byte_near(font_data + pos);
+        for (int i = 0 ; i < FONT_WIDTH ; ++i)
         {
-            game_render_buf[x + i + ((y & ADDR_HIGH) << ADDR_SHIFT)] = game_make_color(color);
+            if ((d >> (FONT_WIDTH - 1 - i)) & 1)
+            {
+                game_render_buf[x + i + s * WIDTH] = game_make_color(color);
+            }
         }
     }
 }

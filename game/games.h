@@ -23,10 +23,10 @@ game_instance instances[] = {
     BackspaceInvaders,
     Snake,
     Flappy,
-	BreakOut,
-	Saper,
+	  BreakOut,
+	  Saper,
     Raycaster,
-    Tester,
+//    Tester,
 #ifndef EMULATED /* for use only on real hardware */
 //    Dump,
 #endif

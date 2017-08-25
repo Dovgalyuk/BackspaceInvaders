@@ -91,11 +91,13 @@ static void BreakOut_render() {
         game_draw_text((const unsigned char*)"SURVIVAL-A",2,2,GREEN);
         game_draw_text((const unsigned char*)"2PLAYER-B",6,12,GREEN);
         game_draw_text((const unsigned char*)"TEST-LEFT",6,22,GREEN);
-        for(int i = 0; i <= 64; i++)
-            game_draw_pixel(i,30,WHITE);
+        if (game_is_drawing_lines(30, 1))
+            for(int i = 0; i <= 64; i++)
+                game_draw_pixel(i,30,WHITE);
         game_draw_text((const unsigned char*)"HELP:",16,32,BLUE);
-        for(int i = 0; i <= 64; i++)
-            game_draw_pixel(i,40,WHITE);
+        if (game_is_drawing_lines(40, 1))
+            for(int i = 0; i <= 64; i++)
+                game_draw_pixel(i,40,WHITE);
         game_draw_text((const unsigned char*)"PAUSE-",1,42,BLUE);
         game_draw_text((const unsigned char*)"{SELECT}",17,51,WHITE);
 
