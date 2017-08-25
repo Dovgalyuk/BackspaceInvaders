@@ -162,13 +162,13 @@ static void BreakOut_render() {
         break;
 
     case 50:
-        game_draw_text((uint8_t*)"SUICIDE", 12, 26, colors[rand() % 5]);
+        game_draw_text((uint8_t*)"SUICIDE", 12, 26, WHITE);
         game_set_ups(73);
         break;
 
     }
     if(data->paused) {
-        game_draw_sprite(&pausef,14,29,colors[rand() % 5]);
+        game_draw_sprite(&pausef,14,29,WHITE);
         game_draw_text((const unsigned char*)"RESTART-",4,43,BLUE);
         game_draw_text((const unsigned char*)"{START}",20,52,WHITE);
     }
