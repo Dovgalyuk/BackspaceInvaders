@@ -1,3 +1,6 @@
+/*
+ * Смородов Владислав и Панов Константин, ЛКШ 2017
+ */
 #pragma GCC optimize ("-O3")
 #include <stdint.h>
 #include "storage.h"

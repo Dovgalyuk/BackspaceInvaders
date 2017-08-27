@@ -1,3 +1,6 @@
+/*
+ * Ценеков Дмитрий и Колесенкова Екатерина, ЛКШ 2017
+ */
 #pragma GCC optimize ("-O3")
 
 #include "libgame.h"
